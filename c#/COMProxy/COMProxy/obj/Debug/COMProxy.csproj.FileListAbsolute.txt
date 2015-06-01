@@ -1,0 +1,9 @@
+E:\workspace\RTKProject\COMProxy\COMProxy\bin\Debug\COMProxy.exe.config
+E:\workspace\RTKProject\COMProxy\COMProxy\bin\Debug\COMProxy.exe
+E:\workspace\RTKProject\COMProxy\COMProxy\bin\Debug\COMProxy.pdb
+E:\workspace\RTKProject\COMProxy\COMProxy\obj\Debug\COMProxy.csprojResolveAssemblyReference.cache
+E:\workspace\RTKProject\COMProxy\COMProxy\obj\Debug\COMProxy.Properties.Resources.resources
+E:\workspace\RTKProject\COMProxy\COMProxy\obj\Debug\COMProxy.csproj.GenerateResource.Cache
+E:\workspace\RTKProject\COMProxy\COMProxy\obj\Debug\COMProxy.exe
+E:\workspace\RTKProject\COMProxy\COMProxy\obj\Debug\COMProxy.pdb
+E:\workspace\RTKProject\COMProxy\COMProxy\obj\Debug\COMProxy.frmMain.resources
