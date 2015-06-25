@@ -23,6 +23,7 @@ type
     mmoLog: TMemo;
     edtNMEAHost: TEdit;
     edtNMEAPort: TEdit;
+    Label2: TLabel;
     procedure actStartExecute(Sender: TObject);
   private
     FLocker:TCriticalSection;
@@ -216,6 +217,7 @@ procedure TfrmMain.OnNTripRequestAccept(pvRequest: TDiocpNTripRequest;
   var vIsNMEA: Boolean);
 begin
   //  if pvRequest.MountPoint = '' then
+  // 判断挂载点是否为NMEA挂载点
   vIsNMEA := true;
 
 end;
@@ -229,7 +231,13 @@ end;
 
 procedure TfrmMain.OnRequestContextDisconnected(pvContext: TDiocpCustomContext);
 begin
-  pvContext.Data := nil;
+  FLocker.Enter;
+  try
+    pvContext.Data := nil;
+  finally
+    FLocker.Leave;
+  end;
+
   FRequestContextPool.EnQueue(pvContext);
 end;
 
@@ -303,11 +311,16 @@ begin
   lvRequestClient :=TIocpRemoteContext(pvRequest.Connection.Data);
   if lvRequestClient = nil then
   begin
-    lvRequestClient := GetRequestContext;
+    FLocker.Enter;
+    try
+      lvRequestClient := GetRequestContext;
 
-    // 相互绑定
-    pvRequest.Connection.Data := lvRequestClient;
-    lvRequestClient.Data := pvRequest.Connection;
+      // 相互绑定
+      pvRequest.Connection.Data := lvRequestClient;
+      lvRequestClient.Data := pvRequest.Connection;
+    finally
+      FLocker.Leave;
+    end;
   end;
 
   if (not lvRequestClient.Active) then

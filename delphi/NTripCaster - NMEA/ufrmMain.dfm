@@ -30,6 +30,13 @@ object frmMain: TfrmMain
         Height = 13
         Caption = #25509#20837#31471#21475
       end
+      object Label2: TLabel
+        Left = 32
+        Top = 149
+        Width = 76
+        Height = 13
+        Caption = 'NMEA'#36716#21457#35831#27714
+      end
       object edtPort: TEdit
         Left = 86
         Top = 74
@@ -89,8 +96,9 @@ object frmMain: TfrmMain
     end
   end
   object tmrCheck: TTimer
+    Enabled = False
     Interval = 20000
-    Left = 296
-    Top = 192
+    Left = 408
+    Top = 80
   end
 end
