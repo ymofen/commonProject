@@ -373,7 +373,7 @@ begin
     lvSession.Port := pvReqeust.RemotePort;
 
     // 回复打洞信息
-    MakeAHole(lvSessionID, lvSession.IP, lvSession.Port);
+    MakeAHole(self.FSessionID, lvSession.IP, lvSession.Port);
 
     
     sfLogger.logMessage('[%s,%d:%d]接收到打洞信息, 并进行了回复', [pvReqeust.RemoteAddr, pvReqeust.RemotePort, lvSessionID]);
@@ -466,7 +466,7 @@ begin
     lvSession.FHoleLastActivity := GetTickCount;
 
     // 发送打洞信息
-    MakeAHole(lvSessionID, lvSession.IP, lvSession.Port);
+    MakeAHole(self.FSessionID, lvSession.IP, lvSession.Port);
     FSessions.unLock;
     
   end else if lvCMDPtr^ = '0' then
