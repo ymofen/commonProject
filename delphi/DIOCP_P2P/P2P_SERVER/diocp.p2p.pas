@@ -79,11 +79,10 @@ end;
 
 procedure TDiocpP2PManager.OnRecv(pvReqeust:TDiocpUdpRecvRequest);
 var
-  lvCMD, lvCMD2, lvTempStr:AnsiString;
+  lvCMD, lvTempStr:AnsiString;
   lvCMDPtr:PAnsiChar;
-  lvSessionID, lvRequestID:Integer;
+  lvSessionID:Integer;
   lvSession:TSessionInfo;
-  lvIsActive:Boolean;
 begin
    // 0                      : 请求激活，返回0, id
    // 1,id                   : 心跳包
@@ -115,11 +114,14 @@ begin
      sfLogger.logMessage('[%s:%d]请求激活, ID:%d', [pvReqeust.RemoteAddr, pvReqeust.RemotePort, lvSessionID]);
    end else if lvCMDPtr^ = '1' then
    begin     //1,id                   : 心跳包
+     SkipUntil(lvCMDPtr, [' ', ',']);
+
+     // 跳过命令符之后的分隔符
      SkipChars(lvCMDPtr, [' ', ',']);
-     lvTempStr := lvCMDPtr;
-     if lvTempStr = '' then Exit;
+     lvTempStr := LeftUntil(lvCMDPtr, [',', ' ']);
+     if Length(lvTempStr) = 0 then lvTempStr := lvCMDPtr;  //最后没有',' 去剩下所有的          
      lvSessionID := StrToIntDef(lvTempStr, 0);
-     if lvSessionID = 0 then Exit;
+     if lvSessionID = 0 then Exit;  // 请求ID无效
 
 
      FSessions.Lock;
@@ -146,7 +148,17 @@ begin
    begin  // 2,request_id, dest_id  : 请求打洞, 返回 2, id, ip, port(对方在线), 2, -1 (对方不在线)
      Process2CMD(pvReqeust, lvCMDPtr);
    end else if lvCMDPtr^ = '3' then
-   begin         // 请求断开
+   begin         // 3,id,                   : 主动断开
+     // 跳过命令符
+     SkipUntil(lvCMDPtr, [' ', ',']);
+
+     // 跳过命令符之后的分隔符
+     SkipChars(lvCMDPtr, [' ', ',']);
+     lvTempStr := LeftUntil(lvCMDPtr, [',', ' ']);
+     if Length(lvTempStr) = 0 then lvTempStr := lvCMDPtr;  //最后没有',' 去剩下所有的          
+     lvSessionID := StrToIntDef(lvTempStr, 0);
+     if lvSessionID = 0 then Exit;  // 请求ID无效
+     
      FSessions.Lock;
      lvSession := TSessionInfo(FSessions.Values[lvSessionID]);
      if lvSession <> nil then
@@ -199,6 +211,7 @@ begin
    if lvSession = nil then
    begin
       lvCMD := Format('2,%d,-1,', [lvSessionID]);
+      lvIsActive := false;
    end else
    begin
      lvIsActive := lvSession.CheckActivity(GetTickCount, FKickTimeOut);
@@ -213,11 +226,19 @@ begin
        // 通知对方进行打洞(请求方的ID, IP, Port)
        lvCMD2 := Format('2,%d,%s,%d', [lvRequestID, pvReqeust.RemoteAddr, pvReqeust.RemotePort]);
 
-       sfLogger.logMessage('[%s:%d]请求打洞->[%s,%d]', [pvReqeust.RemoteAddr, pvReqeust.RemotePort, lvSession.FIP, lvSession.FPort]);
+       // 通知对方进行打洞
+       self.FDiocpUdp.WSASendTo(lvDestAddr, lvDestPort, PAnsiChar(lvCMD2), Length(lvCMD2));
+
+       sfLogger.logMessage('[%s,%d:%d]请求打洞->[%s,%d:%d]',
+         [pvReqeust.RemoteAddr, pvReqeust.RemotePort, lvRequestID,
+         lvSession.FIP, lvSession.FPort, lvSessionID]);
      end else
      begin       // 对方已经失去联系
-       lvCMD := '2, -1';
+       lvCMD := Format('2,%d,-1,', [lvSessionID]);
 
+       sfLogger.logMessage('[%s:%d:%d]请求打洞->[%s,%d:%d]', [
+         pvReqeust.RemoteAddr, pvReqeust.RemotePort, lvRequestID,
+         lvSession.FIP, lvSession.FPort, lvSessionID]);
 
        // 释放Session, 可以改成对象池
        lvSession.Free;
@@ -230,12 +251,6 @@ begin
 
    // 回复 (打洞信息)
    pvReqeust.SendResponse(PAnsiChar(lvCMD), Length(lvCMD));
-
-   if (lvIsActive) then
-   begin
-     // 通知对方进行打洞
-     self.FDiocpUdp.WSASendTo(lvDestAddr, lvDestPort, PAnsiChar(lvCMD2), Length(lvCMD2));
-   end;
 end;
 
 function TSessionInfo.CheckActivity(pvTickcount: Cardinal; pvTimeOut: Integer): Boolean;

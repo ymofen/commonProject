@@ -22,8 +22,6 @@ object Form2: TForm2
     BevelKind = bkTile
     BevelOuter = bvNone
     TabOrder = 0
-    ExplicitTop = -32
-    ExplicitHeight = 595
     object Label1: TLabel
       Left = 11
       Top = 16
@@ -110,8 +108,6 @@ object Form2: TForm2
     Height = 563
     Align = alClient
     TabOrder = 1
-    ExplicitLeft = 167
-    ExplicitTop = 13
   end
   object tmrSendTimer: TTimer
     OnTimer = tmrSendTimerTimer

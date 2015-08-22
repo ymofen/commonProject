@@ -141,8 +141,9 @@ begin
       lvP2PState := FP2PClient.QueryP2PState(StrToInt(edtRemoteID.Text));
       if lvP2PState = 1 then  // 已经打通
       begin
-        CreateP2PForm(StrToInt(edtRemoteID.Text));
+        btnRequestConnect.Caption := '连接成功';
         btnRequestConnect.Enabled := True;
+        CreateP2PForm(StrToInt(edtRemoteID.Text)); 
       end else if lvP2PState = 2 then // 打洞失败
       begin
         btnRequestConnect.Caption := '失败';
@@ -151,7 +152,15 @@ begin
       begin  //打洞失败
         btnRequestConnect.Caption := '对方不在线';
         btnRequestConnect.Enabled := True;
-      end;      
+      end else if lvP2PState = -1 then
+      begin
+        btnRequestConnect.Caption := 'SESSION不存在...';
+        btnRequestConnect.Enabled := True;
+      end else
+      begin
+        btnRequestConnect.Caption := Format('当前状态:%d', [lvP2PState]);
+      end;
+
     end;
   end;
 end;

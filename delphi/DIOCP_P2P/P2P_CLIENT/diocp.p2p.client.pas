@@ -228,7 +228,7 @@ begin
     Exit;
   end;
 
-  if (tick_diff(FLastDoActive, GetTickCount) > 10000) then
+  if (tick_diff(FLastDoActive, GetTickCount) > 5000) then
   begin
     if FActiveState = asNone then FActiveState := asActiving;
 
@@ -246,7 +246,7 @@ var
 begin
   if (FActiveState = asActive) and (FSessionID > 0) then
   begin
-    if (tick_diff(FLastActivity, GetTickCount) > 10000) then
+    if (tick_diff(FLastActivity, GetTickCount) > 5000) then
     begin
       if FActiveState = asNone then FActiveState := asActiving;
 
@@ -256,6 +256,8 @@ begin
       FDiocpUdp.WSASendTo(FP2PServerAddr, FP2PServerPort, PAnsiChar(lvCMD), Length(lvCMD));
       
       FLastActivity := GetTickCount;
+
+      sfLogger.logMessage('发送心跳数据包[%s]!', [lvCMD]);
     end;
   end;
 end;
@@ -280,7 +282,7 @@ begin
     begin
       lvSession.FP2PState := 2;  // 打洞失败
       FMakeHoleList.Remove(lvSession);
-    end else if lvSession.CheckHoleActivity(GetTickCount, 10000) then
+    end else if lvSession.CheckHoleActivity(GetTickCount, 5000) then
     begin
       if lvSession.FIP = '' then
       begin    // 还没有请求到对方IP
@@ -377,7 +379,9 @@ begin
     sfLogger.logMessage('[%s,%d:%d]接收到打洞信息, 并进行了回复', [pvReqeust.RemoteAddr, pvReqeust.RemotePort, lvSessionID]);
   end else
   begin  // 已经成功不进行回复, 否则造成了 不停的循环
-    sfLogger.logMessage('[%s,%d:%d]接收到打洞信息, 不进行回复, 已经成功', [pvReqeust.RemoteAddr, pvReqeust.RemotePort, lvSessionID]);
+    lvSession.P2PState := 1;    // 打洞成功
+    sfLogger.logMessage('[%s,%d:%d,objAddr:%d]接收到打洞信息, 不进行回复, 已经成功', [pvReqeust.RemoteAddr,
+    pvReqeust.RemotePort, lvSessionID, Integer(lvSession)]);
   end;
   FSessions.unLock;
 
@@ -490,7 +494,7 @@ begin
   lvSession := TSessionInfo(FSessions.Values[pvID]);
   if lvSession = nil then
   begin
-    Result := 0;
+    Result := -1;
   end else
   begin
     Result := lvSession.P2PState;
