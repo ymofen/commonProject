@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, dxGDIPlusClasses, ExtCtrls;
+  Dialogs, ExtCtrls;
 
 type
   TfrmAbout = class(TForm)

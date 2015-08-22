@@ -78,7 +78,7 @@ object Form1: TForm1
       ExplicitTop = 281
       ExplicitWidth = 314
     end
-    object pnlSendPanel: TPanel
+    object pnlRecvPanel: TPanel
       Left = 0
       Top = 212
       Width = 870
@@ -162,73 +162,168 @@ object Form1: TForm1
       Align = alTop
       BevelOuter = bvNone
       TabOrder = 1
-      object pnlSendTop: TPanel
+      object PageControl1: TPageControl
         Left = 0
         Top = 0
         Width = 870
-        Height = 50
-        Align = alTop
-        BevelOuter = bvNone
-        TabOrder = 0
-        object edtRemoteIP: TEdit
-          Left = 16
-          Top = 11
-          Width = 121
-          Height = 21
-          TabOrder = 0
-          Text = '127.0.0.1'
-        end
-        object edtRemotPort: TEdit
-          Left = 160
-          Top = 11
-          Width = 65
-          Height = 21
-          TabOrder = 1
-          Text = '9984'
-        end
-        object btnSend: TButton
-          Left = 240
-          Top = 9
-          Width = 75
-          Height = 25
-          Caption = #31435#21363#21457#36865
-          TabOrder = 2
-          OnClick = btnSendClick
-        end
-        object edtSendInterval: TEdit
-          Left = 479
-          Top = 11
-          Width = 58
-          Height = 21
-          TabOrder = 3
-          Text = '1000'
-        end
-        object chkSendTimer: TCheckBox
-          Left = 352
-          Top = 13
-          Width = 121
-          Height = 17
-          Caption = #24320#21551#23450#26102#21457#36865'(ms)'
-          TabOrder = 4
-          OnClick = chkSendTimerClick
-        end
-      end
-      object mmoSend: TMemo
-        Left = 0
-        Top = 50
-        Width = 870
-        Height = 159
+        Height = 209
+        ActivePage = tsSendPage01
         Align = alClient
-        Lines.Strings = (
-          #35201#21457#36865#30340#20869#23481)
-        TabOrder = 1
+        TabOrder = 0
+        object tsSendPage01: TTabSheet
+          Caption = 'tsSendPage01'
+          ExplicitWidth = 281
+          ExplicitHeight = 165
+          object pnlSendTop: TPanel
+            Left = 0
+            Top = 0
+            Width = 862
+            Height = 50
+            Align = alTop
+            BevelOuter = bvNone
+            TabOrder = 0
+            ExplicitWidth = 870
+            object edtRemoteIP: TEdit
+              Left = 16
+              Top = 11
+              Width = 121
+              Height = 21
+              TabOrder = 0
+              Text = '127.0.0.1'
+            end
+            object edtRemotPort: TEdit
+              Left = 160
+              Top = 11
+              Width = 65
+              Height = 21
+              TabOrder = 1
+              Text = '9984'
+            end
+            object btnSend: TButton
+              Left = 240
+              Top = 9
+              Width = 75
+              Height = 25
+              Caption = #31435#21363#21457#36865
+              TabOrder = 2
+              OnClick = btnSendClick
+            end
+            object edtSendInterval: TEdit
+              Left = 479
+              Top = 11
+              Width = 58
+              Height = 21
+              TabOrder = 3
+              Text = '1000'
+            end
+            object chkSendTimer: TCheckBox
+              Left = 352
+              Top = 13
+              Width = 121
+              Height = 17
+              Caption = #24320#21551#23450#26102#21457#36865'(ms)'
+              TabOrder = 4
+              OnClick = chkSendTimerClick
+            end
+          end
+          object mmoSend: TMemo
+            Left = 0
+            Top = 50
+            Width = 862
+            Height = 131
+            Align = alClient
+            Lines.Strings = (
+              #35201#21457#36865#30340#20869#23481)
+            TabOrder = 1
+            ExplicitTop = 0
+            ExplicitWidth = 870
+            ExplicitHeight = 209
+          end
+        end
+        object tsSendPage02: TTabSheet
+          Caption = 'tsSendPage02'
+          ImageIndex = 1
+          ExplicitWidth = 281
+          ExplicitHeight = 165
+          object mmoSend_02: TMemo
+            Left = 0
+            Top = 50
+            Width = 862
+            Height = 131
+            Align = alClient
+            Lines.Strings = (
+              #35201#21457#36865#30340#20869#23481)
+            TabOrder = 0
+            ExplicitTop = 0
+            ExplicitWidth = 870
+            ExplicitHeight = 209
+          end
+          object Panel2: TPanel
+            Left = 0
+            Top = 0
+            Width = 862
+            Height = 50
+            Align = alTop
+            BevelOuter = bvNone
+            TabOrder = 1
+            ExplicitWidth = 870
+            object edtRemoteIP_02: TEdit
+              Left = 16
+              Top = 11
+              Width = 121
+              Height = 21
+              TabOrder = 0
+              Text = '127.0.0.1'
+            end
+            object edtRemotePort_02: TEdit
+              Left = 160
+              Top = 11
+              Width = 65
+              Height = 21
+              TabOrder = 1
+              Text = '9984'
+            end
+            object btnSend_02: TButton
+              Left = 240
+              Top = 9
+              Width = 75
+              Height = 25
+              Caption = #31435#21363#21457#36865
+              TabOrder = 2
+              OnClick = btnSend_02Click
+            end
+            object edtSendInterval_02: TEdit
+              Left = 479
+              Top = 11
+              Width = 58
+              Height = 21
+              TabOrder = 3
+              Text = '1000'
+            end
+            object chkSendTimer_02: TCheckBox
+              Left = 352
+              Top = 13
+              Width = 121
+              Height = 17
+              Caption = #24320#21551#23450#26102#21457#36865'(ms)'
+              TabOrder = 4
+              OnClick = chkSendTimer_02Click
+            end
+          end
+        end
       end
     end
   end
   object tmrSendTimer: TTimer
     Enabled = False
     OnTimer = tmrSendTimerTimer
-    Left = 600
-    Top = 72
+    Left = 192
+    Top = 120
+  end
+  object tmrSendTimer_02: TTimer
+    Enabled = False
+    OnTimer = tmrSendTimer_02Timer
+    Left = 232
+    Top = 120
   end
 end
