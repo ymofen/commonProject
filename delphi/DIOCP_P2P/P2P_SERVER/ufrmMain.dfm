@@ -22,8 +22,6 @@ object frmMain: TfrmMain
     BevelKind = bkTile
     BevelOuter = bvNone
     TabOrder = 0
-    ExplicitTop = -92
-    ExplicitHeight = 595
     object Label1: TLabel
       Left = 16
       Top = 16
@@ -38,6 +36,7 @@ object frmMain: TfrmMain
       Height = 25
       Caption = #24320#22987#20390#21548
       TabOrder = 0
+      OnClick = btnStartClick
     end
     object edtPort: TEdit
       Left = 8
@@ -54,6 +53,38 @@ object frmMain: TfrmMain
       Height = 25
       Caption = #20851#20110
       TabOrder = 2
+    end
+  end
+  object PageControl1: TPageControl
+    Left = 161
+    Top = 0
+    Width = 679
+    Height = 503
+    ActivePage = tsLog
+    Align = alClient
+    TabOrder = 1
+    object tsLog: TTabSheet
+      Caption = #26085#24535
+      ExplicitLeft = 6
+      ExplicitTop = 28
+      object mmoLog: TMemo
+        Left = 0
+        Top = 0
+        Width = 671
+        Height = 475
+        Align = alClient
+        TabOrder = 0
+        ExplicitLeft = 104
+        ExplicitTop = 80
+        ExplicitWidth = 185
+        ExplicitHeight = 89
+      end
+    end
+    object TabSheet2: TTabSheet
+      Caption = 'TabSheet2'
+      ImageIndex = 1
+      ExplicitWidth = 281
+      ExplicitHeight = 165
     end
   end
 end
