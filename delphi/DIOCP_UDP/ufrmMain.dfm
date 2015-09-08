@@ -95,18 +95,19 @@ object Form1: TForm1
         BevelOuter = bvNone
         TabOrder = 0
         object chkStringOut: TCheckBox
-          Left = 16
-          Top = 16
+          Left = 20
+          Top = 10
           Width = 97
           Height = 17
           Caption = #25991#26412#26041#24335#36755#20986
           Checked = True
           State = cbChecked
           TabOrder = 0
+          OnClick = chkStringOutClick
         end
         object chkEcho: TCheckBox
-          Left = 344
-          Top = 16
+          Left = 272
+          Top = 12
           Width = 195
           Height = 17
           Caption = #25910#21040#21518#31435#21363#36820#22238#32473#23545#26041
@@ -114,8 +115,8 @@ object Form1: TForm1
           OnClick = chkEchoClick
         end
         object chkOutTime: TCheckBox
-          Left = 16
-          Top = 40
+          Left = 132
+          Top = 33
           Width = 97
           Height = 17
           Caption = #36755#20986#25509#25910#26102#38388
@@ -125,8 +126,8 @@ object Form1: TForm1
           OnClick = chkOutTimeClick
         end
         object chkWordWrap: TCheckBox
-          Left = 128
-          Top = 16
+          Left = 132
+          Top = 10
           Width = 97
           Height = 17
           Caption = #26029#34892#26174#31034
@@ -136,13 +137,22 @@ object Form1: TForm1
           OnClick = chkWordWrapClick
         end
         object btnClear: TButton
-          Left = 216
-          Top = 16
+          Left = 440
+          Top = 9
           Width = 75
           Height = 25
           Caption = #28165#31354
           TabOrder = 4
           OnClick = btnClearClick
+        end
+        object chkHexOut: TCheckBox
+          Left = 20
+          Top = 33
+          Width = 97
+          Height = 17
+          Caption = '16'#36827#21046#26174#31034
+          TabOrder = 5
+          OnClick = chkHexOutClick
         end
       end
       object mmoRecv: TMemo
@@ -171,9 +181,7 @@ object Form1: TForm1
         Align = alClient
         TabOrder = 0
         object tsSendPage01: TTabSheet
-          Caption = 'tsSendPage01'
-          ExplicitWidth = 281
-          ExplicitHeight = 165
+          Caption = #21457#36865#20027#39029#38754
           object pnlSendTop: TPanel
             Left = 0
             Top = 0
@@ -182,7 +190,6 @@ object Form1: TForm1
             Align = alTop
             BevelOuter = bvNone
             TabOrder = 0
-            ExplicitWidth = 870
             object edtRemoteIP: TEdit
               Left = 16
               Top = 11
@@ -235,16 +242,11 @@ object Form1: TForm1
             Lines.Strings = (
               #35201#21457#36865#30340#20869#23481)
             TabOrder = 1
-            ExplicitTop = 0
-            ExplicitWidth = 870
-            ExplicitHeight = 209
           end
         end
         object tsSendPage02: TTabSheet
-          Caption = 'tsSendPage02'
+          Caption = #38468#21152#21457#36865#39029#38754
           ImageIndex = 1
-          ExplicitWidth = 281
-          ExplicitHeight = 165
           object mmoSend_02: TMemo
             Left = 0
             Top = 50
@@ -254,9 +256,6 @@ object Form1: TForm1
             Lines.Strings = (
               #35201#21457#36865#30340#20869#23481)
             TabOrder = 0
-            ExplicitTop = 0
-            ExplicitWidth = 870
-            ExplicitHeight = 209
           end
           object Panel2: TPanel
             Left = 0
@@ -266,7 +265,6 @@ object Form1: TForm1
             Align = alTop
             BevelOuter = bvNone
             TabOrder = 1
-            ExplicitWidth = 870
             object edtRemoteIP_02: TEdit
               Left = 16
               Top = 11

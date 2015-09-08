@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, diocp.core.rawWinSocket, StdCtrls, diocp.winapi.winsock2, diocp.udp, utils.safeLogger,
-  ExtCtrls, ComCtrls, utils.base64;
+  ExtCtrls, ComCtrls, utils.base64, utils.byteTools;
 
 type
   TForm1 = class(TForm)
@@ -44,6 +44,7 @@ type
     edtSendInterval_02: TEdit;
     chkSendTimer_02: TCheckBox;
     tmrSendTimer_02: TTimer;
+    chkHexOut: TCheckBox;
     procedure btnAboutClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure btnClearClick(Sender: TObject);
@@ -51,10 +52,11 @@ type
     procedure btnSend_02Click(Sender: TObject);
     procedure btnStartClick(Sender: TObject);
     procedure chkEchoClick(Sender: TObject);
-    procedure chkLogRecvClick(Sender: TObject);
+    procedure chkHexOutClick(Sender: TObject);
     procedure chkOutTimeClick(Sender: TObject);
     procedure chkSendTimerClick(Sender: TObject);
     procedure chkSendTimer_02Click(Sender: TObject);
+    procedure chkStringOutClick(Sender: TObject);
     procedure chkWordWrapClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure tmrSendTimerTimer(Sender: TObject);
@@ -78,6 +80,7 @@ var
   Form1: TForm1;
   __logRecv:Boolean;
   __recvEcho:Boolean;
+  __hexOutput:Boolean;
 
 implementation
 
@@ -160,6 +163,7 @@ begin
     FDiocpUdp.Start();
     __logRecv := chkStringOut.Checked;
     __recvEcho := chkEcho.Checked;
+    __hexOutput := chkHexOut.Checked;
   end;
 
   RefreshState;
@@ -170,9 +174,14 @@ begin
   __recvEcho := chkEcho.Checked;
 end;
 
-procedure TForm1.chkLogRecvClick(Sender: TObject);
+procedure TForm1.chkHexOutClick(Sender: TObject);
 begin
-  __logRecv := chkStringOut.Checked;
+  __hexOutput := chkHexOut.Checked;
+  if __hexOutput then
+  begin
+    chkStringOut.Checked := false;
+    __logRecv := false;
+  end;
 end;
 
 procedure TForm1.chkOutTimeClick(Sender: TObject);
@@ -192,6 +201,16 @@ begin
   tmrSendTimer_02.Enabled := chkSendTimer_02.Checked;
 end;
 
+procedure TForm1.chkStringOutClick(Sender: TObject);
+begin
+  __logRecv := chkStringOut.Checked;
+  if __logRecv then
+  begin
+    chkHexOut.Checked := false;
+    __hexOutput := false;
+  end;
+end;
+
 procedure TForm1.chkWordWrapClick(Sender: TObject);
 begin
   mmoRecv.WordWrap := chkWordWrap.Checked;
@@ -206,16 +225,37 @@ procedure TForm1.OnRecv(pvReqeust:TDiocpUdpRecvRequest);
 var
   s:AnsiString;
 begin
-  if __logRecv then
-  begin
-    s := PAnsiChar(pvReqeust.RecvBuffer);
-    s[pvReqeust.RecvBufferLen + 1] := #0;
-    sfLogger.logMessage(Format('[%s:%d]- %s', [pvReqeust.RemoteAddr, pvReqeust.RemotePort, s]));
-  end;
-  if __recvEcho then
-  begin
-    pvReqeust.SendResponse(pvReqeust.RecvBuffer, pvReqeust.RecvBufferLen);
-    Sleep(10);
+  try
+    if __hexOutput then
+    begin
+      s := TByteTools.varToHexString(pvReqeust.RecvBuffer^, pvReqeust.RecvBufferLen);
+      sfLogger.logMessage(Format('[%s:%d]- %s', [pvReqeust.RemoteAddr, pvReqeust.RemotePort, s]));
+    end else if __logRecv then
+    begin
+      try
+        s := PAnsiChar(pvReqeust.RecvBuffer);
+        s[pvReqeust.RecvBufferLen + 1] := #0;
+        sfLogger.logMessage(Format('[%s:%d]- %s', [pvReqeust.RemoteAddr, pvReqeust.RemotePort, s]));
+      except
+        on E:Exception do
+        begin
+          s := '以文本显示数据时出现了异常：' + E.Message;
+          sfLogger.logMessage(Format('[%s:%d]- %s', [pvReqeust.RemoteAddr, pvReqeust.RemotePort, s]));
+        end; 
+      end;
+    end;
+    if __recvEcho then
+    begin
+      pvReqeust.SendResponse(pvReqeust.RecvBuffer, pvReqeust.RecvBufferLen);
+      Sleep(10);
+    end;
+  except
+    on E:Exception do
+    begin
+      s := '接收处理数据时出现了异常：' + E.Message;
+      sfLogger.logMessage(Format('[%s:%d]- %s', [pvReqeust.RemoteAddr, pvReqeust.RemotePort, s]));
+    end;
+
   end;
 end;
 
@@ -249,7 +289,8 @@ begin
 
 
 
-    chkStringOut.Checked := lvIniFile.ReadBool('ui', 'stringOut', true);
+    chkStringOut.Checked := lvIniFile.ReadBool('ui', 'stringOut', false);
+    chkHexOut.Checked := lvIniFile.ReadBool('ui', 'hexOutput', true);
     chkOutTime.Checked :=lvIniFile.ReadBool('ui', 'recvShowTime', True);
     chkEcho.Checked :=lvIniFile.ReadBool('ui', 'recvEcho', False);
     chkWordWrap.Checked :=lvIniFile.ReadBool('ui', 'recvWordWrap', True);
@@ -307,6 +348,7 @@ begin
     lvIniFile.WriteString('ui', 'sendstr_02', s);
 
     lvIniFile.WriteBool('ui', 'stringOut', chkStringOut.Checked);
+    lvIniFile.WriteBool('ui', 'hexOutPut', chkHexOut.Checked);
     lvIniFile.WriteBool('ui', 'recvShowTime', chkOutTime.Checked);
     lvIniFile.WriteBool('ui', 'recvEcho', chkEcho.Checked);
     lvIniFile.WriteBool('ui', 'recvWordWrap', chkWordWrap.Checked);
