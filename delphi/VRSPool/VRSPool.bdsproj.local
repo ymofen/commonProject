@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<Transactions>
+    <Transaction>2015/12/03 23:55:36.249.bdsproj,C:\Users\Administrator\Documents\RAD Studio\Projects\Project1.bdsproj=E:\workspace\BizProject\DiocpBizProjects\DSS\DSS-RPC\DSS.bdsproj</Transaction>
+    <Transaction>2015/12/04 20:54:20.111.pas,E:\workspace\BizProject\DiocpBizProjects\DSS\DSS-RPC\Unit1.pas=E:\workspace\BizProject\DiocpBizProjects\DSS\Common\dssPlugin.pas</Transaction>
+    <Transaction>2015/12/04 23:01:56.998.pas,E:\workspace\BizProject\DiocpBizProjects\DSS\Common\dssPlugin.pas=E:\workspace\BizProject\DiocpBizProjects\DSS\DSS-Plugin\dssPlugin.pas</Transaction>
+    <Transaction>2015/12/04 23:04:58.014.pas,E:\workspace\BizProject\DiocpBizProjects\DSS\DSS-RPC\Unit1.pas=E:\workspace\BizProject\DiocpBizProjects\DSS\DSS-Plugin\dssLoader.pas</Transaction>
+    <Transaction>2015/12/04 23:52:19.090.pas,E:\workspace\BizProject\DiocpBizProjects\DSS\DSS-RPC\Unit1.pas=E:\workspace\BizProject\DiocpBizProjects\DSS\Common\dssIntf.pas</Transaction>
+    <Transaction>2015/12/05 10:37:59.675.pas,E:\workspace\BizProject\DiocpBizProjects\DSS\DSS-RPC\Unit1.pas=E:\workspace\BizProject\DiocpBizProjects\DSS\DSS-RPC\udmService.pas</Transaction>
+    <Transaction>2015/12/05 10:37:59.675.dfm,E:\workspace\BizProject\DiocpBizProjects\DSS\DSS-RPC\Unit1.dfm=E:\workspace\BizProject\DiocpBizProjects\DSS\DSS-RPC\udmService.dfm</Transaction>
+    <Transaction>2015/12/05 12:24:33.712.pas,E:\workspace\BizProject\DiocpBizProjects\DSS\DSS-RPC\Unit1.pas=E:\workspace\BizProject\DiocpBizProjects\DSS\DSS-RPC\DSSIntfImpl.pas</Transaction>
+    <Transaction>2016/01/16 19:40:02.989.bdsproj,E:\workspace\BizProject\DiocpBizProjects\DMS\DSS.bdsproj=E:\workspace\BizProject\DiocpBizProjects\DMS\DMS.bdsproj</Transaction>
+    <Transaction>2016/01/16 19:42:34.581.pas,E:\workspace\BizProject\DiocpBizProjects\DPS\dssPlugin.pas=E:\workspace\BizProject\DiocpBizProjects\DPS\dps_Service.pas</Transaction>
+    <Transaction>2016/01/16 19:43:55.287.pas,E:\workspace\BizProject\DiocpBizProjects\DPS\dssLoader.pas=E:\workspace\BizProject\DiocpBizProjects\DPS\dp_loader.pas</Transaction>
+    <Transaction>2016/01/16 19:44:01.198.pas,E:\workspace\BizProject\DiocpBizProjects\DPS\dp_loader.pas=E:\workspace\BizProject\DiocpBizProjects\DPS\dps_loader.pas</Transaction>
+    <Transaction>2016/01/16 19:44:23.489.pas,E:\workspace\BizProject\DiocpBizProjects\DPS\dssRes.pas=E:\workspace\BizProject\DiocpBizProjects\DPS\dp_res.pas</Transaction>
+    <Transaction>2016/01/16 19:44:31.738.pas,E:\workspace\BizProject\DiocpBizProjects\DPS\dp_res.pas=E:\workspace\BizProject\DiocpBizProjects\DPS\dps_res.pas</Transaction>
+    <Transaction>2016/01/16 19:45:01.223.pas,E:\workspace\BizProject\DiocpBizProjects\DPS\dps_Service.pas=</Transaction>
+    <Transaction>2016/01/16 19:45:15.890.pas,E:\workspace\BizProject\DiocpBizProjects\DMS\DSSIntfImpl.pas=</Transaction>
+    <Transaction>2016/01/16 19:53:21.516.pas,E:\workspace\BizProject\DiocpBizProjects\DMS\Unit1.pas=E:\workspace\BizProject\DiocpBizProjects\DMS\dms_intf.pas</Transaction>
+    <Transaction>2016/01/16 20:14:03.692.pas,E:\workspace\BizProject\DiocpBizProjects\DiocpServiceSystem\DMS\Unit1.pas=E:\workspace\BizProject\DiocpBizProjects\DiocpServiceSystem\Common\dms_protocol.pas</Transaction>
+    <Transaction>2016/01/16 21:27:45.807.pas,E:\workspace\BizProject\DiocpBizProjects\DiocpServiceSystem\DMS\Unit1.pas=E:\workspace\BizProject\DiocpBizProjects\DiocpServiceSystem\DMS\dms_center.pas</Transaction>
+    <Transaction>2016/01/17 10:45:29.433.pas,E:\workspace\BizProject\DiocpBizProjects\DiocpServiceSystem\DMS\Unit1.pas=E:\workspace\BizProject\DiocpBizProjects\DiocpServiceSystem\DMS\dms_Entity.pas</Transaction>
+    <Transaction>2016/01/17 10:49:43.523.pas,E:\workspace\BizProject\DiocpBizProjects\DiocpServiceSystem\DMS\Unit1.pas=E:\workspace\BizProject\DiocpBizProjects\DiocpServiceSystem\DMS\dms_usercenter.pas</Transaction>
+    <Transaction>2016/01/18 22:23:26.185.pas,E:\workspace\BizProject\DiocpBizProjects\DiocpServiceSystem\DMS\dms_Entity.pas=</Transaction>
+    <Transaction>2016/01/19 21:58:38.980.pas,E:\workspace\BizProject\DiocpBizProjects\DiocpServiceSystem\DMS\Unit1.pas=E:\workspace\BizProject\DiocpBizProjects\DiocpServiceSystem\DMS\dms_subscribe_center.pas</Transaction>
+    <Transaction>2016/02/07 10:56:18.983.pas,E:\workspace\BizProject\DiocpBizProjects\DiocpServiceSystem\DMS\Unit1.pas=E:\workspace\BizProject\DiocpBizProjects\DiocpServiceSystem\DMS\dms_msg_center.pas</Transaction>
+    <Transaction>2016/02/24 11:37:49.096.bdsproj,E:\workspace\commonProject\delphi\VRSPool\DMS.bdsproj=E:\workspace\commonProject\delphi\VRSPool\VRSPool.bdsproj</Transaction>
+    <Transaction>2016/02/24 13:31:27.896.pas,E:\workspace\commonProject\delphi\VRSPool\Unit1.pas=E:\workspace\commonProject\delphi\VRSPool\vrs_source.pas</Transaction>
+    <Transaction>2016/03/02 08:51:26.792.pas,E:\workspace\commonProject\delphi\VRSPool\Unit1.pas=E:\workspace\commonProject\delphi\VRSPool\NtripRequest.pas</Transaction>
+    <Transaction>2016/03/02 11:09:25.141.pas,E:\workspace\commonProject\delphi\VRSPool\Unit1.pas=E:\workspace\commonProject\delphi\VRSPool\ntrip_tools.pas</Transaction>
+  </Transactions>
+</BorlandProject>
