@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<Transactions>
+    <Transaction>2015/12/13 13:42:35.661.pas,C:\Users\Administrator\Documents\RAD Studio\Projects\Unit1.pas=E:\workspace\commonProject\delphi\DValueTester\ufrmMain.pas</Transaction>
+    <Transaction>2015/12/13 13:42:35.661.dfm,C:\Users\Administrator\Documents\RAD Studio\Projects\Unit1.dfm=E:\workspace\commonProject\delphi\DValueTester\ufrmMain.dfm</Transaction>
+    <Transaction>2015/12/13 13:42:41.580.bdsproj,C:\Users\Administrator\Documents\RAD Studio\Projects\Project1.bdsproj=E:\workspace\commonProject\delphi\DValueTester\DValueTester.bdsproj</Transaction>
+    <Transaction>2016/01/31 13:53:33.484.pas,E:\workspace\commonProject\delphi\DValueTester\DValueJSon.pas=E:\workspace\commonProject\delphi\DValueTester\utils_DValue_JSON.pas</Transaction>
+    <Transaction>2016/03/10 14:20:09.611.pas,E:\workspace\commonProject\delphi\DValueTester\DxStringBuilder.pas=</Transaction>
+  </Transactions>
+</BorlandProject>
