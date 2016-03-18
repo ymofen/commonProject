@@ -14,7 +14,8 @@ uses
   LogFileAppender4SafeLogger in 'LogFileAppender4SafeLogger.pas',
   vrs_source in 'vrs_source.pas',
   NtripRequest in 'NtripRequest.pas',
-  ntrip_tools in 'ntrip_tools.pas';
+  ntrip_tools in 'ntrip_tools.pas',
+  DataCenter in 'DataCenter.pas';
 
 var
   s, lvFile, lvHomeDir:String;
@@ -38,7 +39,7 @@ begin
   RegisterDiocpLogger(sfLogger);
 
   WriteHelpHint();
-    
+
   try
 
     dmService := TdmService.Create(nil);
@@ -46,11 +47,9 @@ begin
       dmService.Start;
 
       //sfLogger.logMessage(GetSourceTable('119.97.244.11', 2102));
-
-      sfLogger.logMessage('VRS 服务已经启动%s:%d', [dmService.TcpSvr.DefaultListenAddress,
+      sfLogger.logMessage('内部编译版本: 2016-03-18 11:13:27');
+      sfLogger.logMessage('VRS.Pool 服务已经启动%s:%d', [dmService.TcpSvr.DefaultListenAddress,
         dmService.TcpSvr.Port]);
-      sfLogger.logMessage('VRS 数据源vrsource.host:%s, vrsource.port:%d', [dmService.VRSSource.Host,
-        dmService.VRSSource.Port]);
       while (True) do
       begin
         Readln(s);
@@ -70,9 +69,14 @@ begin
         begin
           Writeln('正在计算速度信息, 请稍等...');
           dmService.TcpSvr.DataMoniter.SpeedCalcuStart;
+          dmService.VRSSource.DiocpTcpClient.DataMoniter.SpeedCalcuStart;
           Sleep(1000);
           dmService.TcpSvr.DataMoniter.SpeedCalcuEnd;
+          dmService.VRSSource.DiocpTcpClient.DataMoniter.SpeedCalcuEnd;
           Writeln(dmService.TcpSvr.GetStateInfo);
+          Writeln(dmService.VRSSource.DiocpTcpClient.GetStateInfo);
+
+
         end;
       end;
       writeln('正在准备退出...');

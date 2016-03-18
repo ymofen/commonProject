@@ -56,9 +56,6 @@ type
     property SourcePass: String read FSourcePass write FSourcePass;
 
 
-
-    
-
     procedure DoCleanUp;
 
     destructor Destroy; override;
@@ -75,7 +72,6 @@ implementation
 
 var
   __RequestBufferPool:PBufferPool;
-
 
 
 procedure __initalizeRequestBufferPool;
@@ -174,34 +170,41 @@ begin
   if (pvByte = END_BYTES[FEndMatchIndex]) then
   begin
     inc(FEndMatchIndex);
-    if (FEndMatchIndex = 4) then
-    begin
-      if FSectionFlag = 0 then
-      begin                                             
-        FHeader := Utf8BufferToString(FBuffer, FLength);
-        if DecodeHeader = -1 then
-        begin
-          FSectionFlag := 0;
-          Result := -1;
-        end else
-        begin
-          FSectionFlag := 1;
-          Result := 1;
-        end;
+
+    if (FSectionFlag = 0) and (FEndMatchIndex = 4) then
+    begin   // 包头
+      FHeader := Utf8BufferToString(FBuffer, FLength);
+      if DecodeHeader = -1 then
+      begin
+        FSectionFlag := 0;
+        Result := -1;
       end else
       begin
-        FContext := Utf8BufferToString(FBuffer, FLength);
-        Result := 2;
+        FSectionFlag := 1;
+        Result := 1;
       end;
+
+      // 还回一个Buffer
       ReleaseRef(FBuffer);
       FBuffer :=nil;
       FFlag := 0;
 
       Exit;
-    end;
+    end else if (FSectionFlag = 1) and (FEndMatchIndex = 2) then
+    begin   // 请求数据<以换行符为一个请求>
+      FContext := Utf8BufferToString(FBuffer, FLength);
+      Result := 2;     // Context
+
+      // 还回一个Buffer
+      ReleaseRef(FBuffer);
+      FBuffer :=nil;
+      FFlag := 0;   // 重新开始请求Buffer进行解码
+
+      Exit;
+    end;  
   end
   else if (FLength = MAX_RAW_BUFFER_SIZE) then
-  begin
+  begin            // 数据过长
     ReleaseRef(FBuffer);
     FBuffer :=nil;
     FFlag := 0;

@@ -7,7 +7,7 @@ uses
   diocp.tcp.server, IniFiles,  diocp.task,
 
   utils_async, Windows, vrs_source, utils_rawPackage, utils.strings,
-  NtripRequest, utils_BufferPool, utils.queues, utils.hashs;
+  NtripRequest, utils_BufferPool, utils.queues, utils.hashs, ntrip_source;
 
 const
   END_BYTES :array[0..1] of Byte = (13,10);
@@ -18,6 +18,7 @@ type
     FRequest: TNtripRequest;
     FRawRequest:String;
     FRequestNMEA: String;
+    FRequestMountPoint:String;
   protected
     procedure DoCleanUp; override;
     procedure OnConnected; override;
@@ -51,6 +52,7 @@ type
 
   TdmService = class(TDataModule)
   private
+    FConvertNMEA:Integer;
     FTcpSvr: TDiocpTcpServer;
     FVRSSource: TVRSSoruce;
     FASync:TASyncInvoker;
@@ -66,18 +68,22 @@ type
 
     procedure KickContextByHandle(pvSocketHandle:THandle);
 
-    procedure AddNMEARequest(pvNMEA:String; pvContext:TMyClientContext);
+    procedure AddNMEARequest(pvRequestMountPoint, pvNMEA: string; pvContext:
+        TMyClientContext);
 
-    procedure RemoveNMEARequest(pvNMEA:string; pvContext:TMyClientContext);
+    procedure RemoveNMEARequest(pvRequestMountPoint, pvNMEA: string; pvContext:
+        TMyClientContext);
 
-    procedure DispatchBuffer(pvNMEA:String; pvBuf:Pointer; len:Cardinal);
+    procedure DispatchBuffer(pvMountPoint, pvNMEA: string; pvBuf: Pointer; len:
+        Cardinal);
 
     procedure OnASyncWorker(pvWorker:TASyncWorker);
 
-    procedure DoRecvRequest(pvContext: TMyClientContext; pvMountPoint, pvData:
-        string);
+    procedure DoRecvRequest(pvContext: TMyClientContext;
+        pvMountPoint, pvData: string);
 
-    procedure OnRecvVRSBuffer(pvNMEA:string; buf:Pointer; len:Cardinal);
+    procedure OnRecvVRSBuffer(pvMountPoint, pvNMEA: string; buf: Pointer; len:
+        Cardinal);
 
     function ConvertRequestNMEA(pvData:String): String;
 
@@ -88,11 +94,9 @@ type
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
 
-    procedure Reload;
-
     procedure Start;
     procedure Stop;
-    
+
     property TcpSvr: TDiocpTcpServer read FTcpSvr;
     property VRSSource: TVRSSoruce read FVRSSource;
   end;
@@ -102,10 +106,12 @@ type
 var
   dmService: TdmService;
 
+function GetNmeaW(InNmea: PWideChar): PWideChar; external 'libNmeaGrid.dll';
+
 implementation
 
 uses
-  utils.safeLogger, ComObj, DateUtils, ntrip_tools;
+  utils.safeLogger, ComObj, DateUtils, ntrip_tools, DataCenter;
 
 {$R *.dfm}
 
@@ -117,6 +123,7 @@ const
 constructor TdmService.Create(AOwner: TComponent);
 begin
   inherited;
+  ntripSourceList := TNtripSources.Create;
 
   FASync := TASyncInvoker.Create;
   FVRSSource := TVRSSoruce.Create;
@@ -144,34 +151,41 @@ begin
   FRequestNMEAMap.FreeAllDataAsObject;
   FRequestNMEAMap.Free;
 
+  ntripSourceList.Free;
+
   FASync.Free;
   __finalizeRequestBufferPool;
   inherited;
 end;
 
-procedure TdmService.AddNMEARequest(pvNMEA:String; pvContext:TMyClientContext);
+procedure TdmService.AddNMEARequest(pvRequestMountPoint, pvNMEA: string;
+    pvContext: TMyClientContext);
 var
   lvSource:TSourceNodes;
+  lvMapID:String;
 begin
+  lvMapID := pvRequestMountPoint+'_'+ pvNMEA;
   FRequestNMEAMap.Lock;
-  lvSource := TSourceNodes(FRequestNMEAMap.ValueMap[pvNMEA]);
+  lvSource := TSourceNodes(FRequestNMEAMap.ValueMap[lvMapID]);
   if lvSource = nil then
   begin
     lvSource := TSourceNodes.Create;
-    FRequestNMEAMap.ValueMap[pvNMEA] := lvSource;
+    FRequestNMEAMap.ValueMap[lvMapID] := lvSource;
   end;
   FRequestNMEAMap.unLock;
 
   lvSource.AddRequest(pvContext);
 end;
 
-procedure TdmService.RemoveNMEARequest(pvNMEA:string;
-    pvContext:TMyClientContext);
+procedure TdmService.RemoveNMEARequest(pvRequestMountPoint, pvNMEA: string;
+    pvContext: TMyClientContext);
 var
   lvSource:TSourceNodes;
+  lvMapID:String;
 begin
+  lvMapID := pvRequestMountPoint+'_'+ pvNMEA;
   FRequestNMEAMap.Lock;
-  lvSource := TSourceNodes(FRequestNMEAMap.ValueMap[pvNMEA]);
+  lvSource := TSourceNodes(FRequestNMEAMap.ValueMap[lvMapID]);
   FRequestNMEAMap.unLock;
 
   if lvSource <> nil then
@@ -180,18 +194,24 @@ end;
 
 
 function TdmService.ConvertRequestNMEA(pvData:String): String;
+var
+  lvTmpWStr:WideString;
 begin
-  Result := pvData;
+  lvTmpWStr := pvData;
+  Result :=  GetNmeaW(PWideChar(lvTmpWStr));
+  
 end;
 
-procedure TdmService.DispatchBuffer(pvNMEA:String; pvBuf:Pointer; len:Cardinal);
+procedure TdmService.DispatchBuffer(pvMountPoint, pvNMEA: string; pvBuf:
+    Pointer; len: Cardinal);
 var
   lvSource:TSourceNodes;
   i: Integer;
-  
+  lvMapID:String;
 begin
+  lvMapID := pvMountPoint + '_' + pvNMEA;
   FRequestNMEAMap.Lock;
-  lvSource := TSourceNodes(FRequestNMEAMap.ValueMap[pvNMEA]);
+  lvSource := TSourceNodes(FRequestNMEAMap.ValueMap[lvMapID]);
   FRequestNMEAMap.unLock;
 
   if lvSource <> nil then
@@ -205,7 +225,10 @@ begin
       end;
     finally
       lvSource.UnLock;
-    end; 
+    end;
+  end else
+  begin
+    sfLogger.logMessage('转发数据源[%s]数据(%d)时发现没有请求的客户端连接', [lvMapID, len]);
   end;
 end;
 
@@ -214,22 +237,40 @@ procedure TdmService.DoRecvRequest(pvContext: TMyClientContext; pvMountPoint,
 var
   lvRequestNMEA:String;
 begin
-  lvRequestNMEA := ConvertRequestNMEA(pvData);
-  if lvRequestNMEA <> pvContext.FRequestNMEA then
-  begin
-    if pvContext.FRequestNMEA <> '' then
+  try
+    if FConvertNMEA = 1 then
     begin
-      FVRSSource.ReleaseRequestNMEA(pvContext.FRequestNMEA);
-      RemoveNMEARequest(pvContext.FRequestNMEA, pvContext);
+      lvRequestNMEA := ConvertRequestNMEA(pvData);
+    end else
+    begin
+      lvRequestNMEA := pvData;
     end;
-
-    if lvRequestNMEA <> '' then
+    if lvRequestNMEA <> pvContext.FRequestNMEA then
     begin
-      pvContext.FRawRequest := pvData;
-      pvContext.FRequestNMEA := lvRequestNMEA;
-      FVRSSource.PostNMEARequest(pvMountPoint, lvRequestNMEA);
-      FVRSSource.AddRefRequestNMEA(lvRequestNMEA);
-      AddNMEARequest(pvContext.FRequestNMEA, pvContext);
+      if pvContext.FRequestNMEA <> '' then
+      begin
+        //引用计数
+        FVRSSource.ReleaseRequestNMEA(pvContext.FRequestMountPoint, pvContext.FRequestNMEA);
+        RemoveNMEARequest(pvContext.FRequestMountPoint, pvContext.FRequestNMEA, pvContext);
+      end;
+
+      if lvRequestNMEA <> '' then
+      begin
+        pvContext.FRawRequest := pvData;
+        pvContext.FRequestNMEA := lvRequestNMEA;
+        pvContext.FRequestMountPoint := pvMountPoint;
+
+        FVRSSource.PostNMEARequest(pvMountPoint, lvRequestNMEA);
+        
+        //引用计数
+        FVRSSource.AddRefRequestNMEA(pvMountPoint, lvRequestNMEA);
+
+        AddNMEARequest(pvMountPoint, pvContext.FRequestNMEA, pvContext);
+      end;
+    end;
+  except on e:Exception do
+    begin
+      sfLogger.logMessage('DoRecvRequest(%s, %s) 异常:%s', [pvMountPoint, pvData, e.Message]);
     end;
   end;
 end;
@@ -268,13 +309,19 @@ begin
       s := FTcpSvr.GetContextWorkingInfo();
       if s <> '' then
       begin
-        sfLogger.logMessage('检测到发现长时间工作连接:' + s, '监测日志', lgvWarning);
+        sfLogger.logMessage('接入服务检测到发现长时间工作连接:' + s, '监测日志', lgvWarning);
       end;
 
       s := FTcpSvr.IocpEngine.GetWorkerStateInfo();
       if s <> '' then
       begin
-        sfLogger.logMessage('检测到发现长时间线程工作:' + s, '监测日志', lgvWarning);
+        sfLogger.logMessage('接入服务检测到发现长时间线程工作:' + s, '监测日志', lgvWarning);
+      end;
+
+      s := FVRSSource.DiocpTcpClient.IocpEngine.GetWorkerStateInfo();
+      if s <> '' then
+      begin
+        sfLogger.logMessage('数据源接收服务检测到发现长时间线程工作:' + s, '监测日志', lgvWarning);
       end;
       lvCheckTimeOut := lvTickCount;
     end;
@@ -282,9 +329,10 @@ begin
   end;
 end;
 
-procedure TdmService.OnRecvVRSBuffer(pvNMEA:string; buf:Pointer; len:Cardinal);
+procedure TdmService.OnRecvVRSBuffer(pvMountPoint, pvNMEA: string; buf:
+    Pointer; len: Cardinal);
 begin
-  DispatchBuffer(pvNMEA, buf, len);
+  DispatchBuffer(pvMountPoint, pvNMEA, buf, len);
 end;
 
 procedure TdmService.OnSendBufferCompleted(pvContext: TIocpClientContext;
@@ -296,36 +344,58 @@ begin
   end;
 end;
 
-procedure TdmService.Reload;
-begin
-  try
-    FSourceTable := GetSourceTable(FVRSSource.Host, FVRSSource.Port);
-    sfLogger.logMessage('加载SourceTable成功, 长度:%d', [Length(FSourceTable)]);
-  except
-    on e:Exception do
-    begin
-      sfLogger.logMessage('获取SourceTable数据失败:%s', [e.Message]);
-    end;                                                                 
-  end;  
-end;
-
 procedure TdmService.ReloadConfig;
 var
   lvIniFile:TIniFile;
+  i: Integer;
+  lvNtripSource:TNtripSource;
+
 begin
-  lvIniFile:= TIniFile.Create(ChangeFileExt(ParamStr(0), '.config.ini'));
+  ReloadSourceTable;
+  ntripSourceList.Lock;
   try
-    lvIniFile.WriteString('vrs_histroy', 'start', FormatDateTime('yyyy-MM-dd hh:nn:ss', Now));
-    FTcpSvr.DefaultListenAddress := lvIniFile.ReadString('vrs_config', 'ip', '0.0.0.0');
-    FTcpSvr.Port := lvIniFile.ReadInteger('vrs_config', 'Port', 9983);
-    FTcpSvr.WorkerCount := lvIniFile.ReadInteger('vrs_config', 'Worker', 0);
+    ntripSourceList.LoadFromFile(ExtractFilePath(ParamStr(0)) + 'sourceTable.txt');
+  
+    lvIniFile:= TIniFile.Create(ChangeFileExt(ParamStr(0), '.config.ini'));
+    try
+      lvIniFile.WriteString('vrs_histroy', 'start', FormatDateTime('yyyy-MM-dd hh:nn:ss', Now));
+      FTcpSvr.DefaultListenAddress := lvIniFile.ReadString('vrs_config', 'ip', '0.0.0.0');
+      FTcpSvr.Port := lvIniFile.ReadInteger('vrs_config', 'Port', 2101);
+      FTcpSvr.WorkerCount := lvIniFile.ReadInteger('vrs_config', 'Worker', 0);
 
-    FVRSSource.Host := lvIniFile.ReadString('vrs_config', 'vrsource.host', '127.0.0.1');
-    FVRSSource.Port := lvIniFile.ReadInteger('vrs_config', 'vrsource.port', 9984);
+      FConvertNMEA := lvIniFile.ReadInteger('vrs_config', 'convert_nmea', 0);
 
+      if ntripSourceList.Count = 0 then
+      begin
+        sfLogger.logMessage('警告:没有挂载点配置,无法进行正常服务!');
+      end else
+      begin  
+        for i := 0 to ntripSourceList.Count - 1 do
+        begin
+          lvNtripSource := ntripSourceList.Items[i];
+          lvNtripSource.DValue.ForceByName('host').AsString :=
+            lvIniFile.ReadString('vrs_source', lvNtripSource.MountPoint + '.host', '127.0.0.1');
+          lvNtripSource.DValue.ForceByName('port').AsInteger :=
+            lvIniFile.ReadInteger('vrs_source', lvNtripSource.MountPoint + '.port', 9984);
+          lvNtripSource.DValue.ForceByName('auth_user').AsString :=
+            lvIniFile.ReadString('vrs_source', lvNtripSource.MountPoint + '.auth.user', '');
+          lvNtripSource.DValue.ForceByName('auth_pass').AsString :=
+            lvIniFile.ReadString('vrs_source', lvNtripSource.MountPoint + '.auth.pass', '');
+
+          sfLogger.logMessage('挂载点[%s]请求数据源配置:%s:%d',
+            [lvNtripSource.MountPoint,
+            lvNtripSource.DValue.ForceByName('host').AsString,
+            lvNtripSource.DValue.ForceByName('port').AsInteger]);             
+        end;
+      end;
+    finally
+      lvIniFile.Free;
+    end;
   finally
-    lvIniFile.Free;
+    ntripSourceList.UnLock;
   end;
+
+
 end;
 
 
@@ -376,8 +446,8 @@ begin
   inherited;
   if FRequestNMEA <> '' then
   begin
-    dmService.VRSSource.ReleaseRequestNMEA(FRequestNMEA);
-    dmService.RemoveNMEARequest(FRequestNMEA, Self);
+    dmService.VRSSource.ReleaseRequestNMEA(FRequestMountPoint, FRequestNMEA);
+    dmService.RemoveNMEARequest(FRequestMountPoint, FRequestNMEA, Self);
     FRequestNMEA := '';
   end;
 end;
@@ -387,15 +457,47 @@ var
   I, r: Integer;
   lvPtr:PByte;
   lvNMEA:String;
+  lvFindSource:Boolean;
+  {$IFDEF DEBUG}
+  lvRecvStr:AnsiString;
+  {$ENDIF}
 begin
   RecordWorkerStartTick;
-  try     
+  try
+    {$IFDEF DEBUG}
+    SetLength(lvRecvStr, len);
+    move(buf^, PAnsiChar(lvRecvStr)^, len);
+    sfLogger.logMessage('接收到来自(%s:%d)数据:%s', [self.RemoteAddr, Self.RemotePort, lvRecvStr], '', lgvDebug);
+    {$ENDIF}
+
+    i := 0;
     lvPtr := PByte(buf);
     while i < len do
     begin
        r := FRequest.InputBuffer(lvPtr^);
        if r = 1 then
        begin
+         lvFindSource := FRequest.MountPoint <> '';
+         if lvFindSource then
+         begin
+           ntripSourceList.Lock;
+           lvFindSource := ntripSourceList.FindSource(FRequest.MountPoint) <> nil;
+           ntripSourceList.UnLock;
+
+           if not lvFindSource then
+           begin
+             sfLogger.logMessage('请求的挂载点:%s不存在。', [FRequest.MountPoint]);
+           end;
+         end;
+
+         if not lvFindSource then
+         begin
+           self.PostWSASendRequest(PAnsiChar(__sourceTable), Length(__sourceTable), dtNone);
+           self.PostWSACloseRequest;
+           Exit;
+         end;
+
+         self.PostWSASendRequest(PAnsiChar(ICY_200_OK), length(ICY_200_OK), dtNone);
          sfLogger.logMessage('接收到请求数据,挂载点:%s', [FRequest.MountPoint]);
          Inc(lvPtr);
          Inc(i);

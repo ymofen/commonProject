@@ -3,15 +3,49 @@ unit ntrip_tools;
 interface
 
 uses
-  diocp.core.rawWinSocket, utils.strings, SysUtils;
+  diocp.core.rawWinSocket, utils.strings, SysUtils, Classes;
 
 const
   DOUBLE_LINEBREAK_BYTES : array[0..3] of Byte = (13,10,13,10);
 
 function GetSourceTable(pvHost: string; pvPort: Integer): String;
 
+procedure ReloadSourceTable;
+
+var
+  __sourceTable:AnsiString;
+  __sourceTableHtml:AnsiString;
+
+const
+  ICY_200_OK:AnsiString = 'ICY 200 OK'#13#10#13#10;
 
 implementation
+
+
+
+procedure ReloadSourceTable;
+var
+  lvLoader:TStringList;
+  lvData:AnsiString;
+begin
+  lvLoader := TStringList.Create();
+  try
+    lvLoader.LoadFromFile(ExtractFilePath(ParamStr(0)) + 'sourceTable.txt');
+    lvData := trim(lvLoader.Text);
+
+    __sourceTable := 'SOURCETABLE 200 OK' + sLineBreak +
+            'Content-Type: text/plain' + sLineBreak +
+            'Content-Length: ' + IntToStr(length(lvData)) + sLineBreak + sLineBreak +
+            lvData + sLineBreak +
+           'ENDSOURCETABLE' + sLineBreak + sLineBreak;
+
+    __sourceTableHtml := StringReplace(__sourceTable, sLineBreak, sLineBreak+'<br>', [rfReplaceAll]);
+
+  finally
+    lvLoader.Free;
+  end;
+
+end;
 
 function GetSourceTable(pvHost: string; pvPort: Integer): String;
 var
