@@ -145,9 +145,10 @@ begin
   begin
     ReleaseRef(FBuffer);
     FBuffer := nil;
-    FSectionFlag := 0;
-    FFlag := 0;
+
   end;
+  FSectionFlag := 0;
+  FFlag := 0;
 end;
 
 function TNtripRequest.InputBuffer(pvByte:Byte): Integer;

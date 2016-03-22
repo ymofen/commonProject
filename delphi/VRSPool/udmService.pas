@@ -175,6 +175,8 @@ begin
   FRequestNMEAMap.unLock;
 
   lvSource.AddRequest(pvContext);
+
+  sfLogger.logMessage('绑定请求数据源:%s<=>([%d]%s:%d)', [lvMapID, pvContext.SocketHandle, pvContext.RemoteAddr, pvContext.RemotePort]);
 end;
 
 procedure TdmService.RemoveNMEARequest(pvRequestMountPoint, pvNMEA: string;
@@ -187,6 +189,8 @@ begin
   FRequestNMEAMap.Lock;
   lvSource := TSourceNodes(FRequestNMEAMap.ValueMap[lvMapID]);
   FRequestNMEAMap.unLock;
+
+  sfLogger.logMessage('取消绑定请求数据源:%s<=>([%d]%s:%d)', [lvMapID, pvContext.SocketHandle, pvContext.RemoteAddr, pvContext.RemotePort]);
 
   if lvSource <> nil then
     lvSource.RemoveRequest(pvContext);
@@ -206,7 +210,7 @@ procedure TdmService.DispatchBuffer(pvMountPoint, pvNMEA: string; pvBuf:
     Pointer; len: Cardinal);
 var
   lvSource:TSourceNodes;
-  i: Integer;
+  i, j: Integer;
   lvMapID:String;
 begin
   lvMapID := pvMountPoint + '_' + pvNMEA;
@@ -216,16 +220,26 @@ begin
 
   if lvSource <> nil then
   begin
+
     lvSource.Lock;
     try
+      j := 0;
       for i := 0 to lvSource.FRequestHandleList.Count - 1 do
       begin
         AddRef(pvBuf);
-        TIocpClientContext(lvSource.FRequestHandleList[i]).PostWSASendRequest(pvBuf, len, dtNone, 1);
+        if TIocpClientContext(lvSource.FRequestHandleList[i]).PostWSASendRequest(pvBuf, len, dtNone, 1) then
+        begin
+          inc(j);
+        end else
+        begin
+          ReleaseRef(pvBuf);
+        end;
       end;
     finally
       lvSource.UnLock;
     end;
+    sfLogger.logMessage('转发数据源[%s]数据(%d), 转发数量:%d/%d', [lvMapID, len,
+      j, lvSource.FRequestHandleList.Count]);
   end else
   begin
     sfLogger.logMessage('转发数据源[%s]数据(%d)时发现没有请求的客户端连接', [lvMapID, len]);
@@ -245,6 +259,9 @@ begin
     begin
       lvRequestNMEA := pvData;
     end;
+
+    if lvRequestNMEA = '' then Exit;
+
     if lvRequestNMEA <> pvContext.FRequestNMEA then
     begin
       if pvContext.FRequestNMEA <> '' then
