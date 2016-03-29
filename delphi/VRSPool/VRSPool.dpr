@@ -61,7 +61,9 @@ begin
           WriteHelpHint();
         end else if s = 'reload' then
         begin
-                  
+          Writeln('准备重载配置');
+          dmService.ReloadForCommand;
+          Writeln('重载配置完成');
         end else if s='clear' then
         begin
          // ClearPackState();

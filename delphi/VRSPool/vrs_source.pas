@@ -145,7 +145,7 @@ var
   lvConnect:Boolean;
   lvNtripSource:TNtripSource;
   lvMapID:String;
-  lvUser, lvPass, lvHost:String;
+  lvUser, lvPass, lvHost, lvMountPoint:String;
   lvPort: Integer;
 begin
   lvConnect := false;
@@ -155,6 +155,7 @@ begin
   lvPort := lvNtripSource.DValue.GetIntValueByName('port', 0);
   lvUser := lvNtripSource.DValue.GetStrValueByName('auth_user', '');
   lvPass := lvNtripSource.DValue.GetStrValueByName('auth_pass', '');
+  lvMountPoint := lvNtripSource.DValue.GetValueByName('mountpoint', pvRequestMountPoint);
   ntripSourceList.UnLock;
   if lvNtripSource = nil then
   begin
@@ -223,6 +224,10 @@ begin
   begin
     Dec(lvPVRSRecord.refcounter);
     lvDisconnect := lvPVRSRecord.refcounter = 0;
+    sfLogger.logMessage('**提示: 减少引用计数器(ReleaseRequestNMEA)(%s):当前计数:%d',[lvMapID, lvPVRSRecord.refcounter]);
+  end else
+  begin
+    sfLogger.logMessage('**警告: 减少引用计数器(ReleaseRequestNMEA)时找不到对应的数据(%s)',[lvMapID]);
   end;
   FContextMap.unLock;
 

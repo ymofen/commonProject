@@ -89,11 +89,14 @@ type
 
     procedure OnSendBufferCompleted(pvContext: TIocpClientContext; pvBuff: Pointer;
         len: Cardinal; pvBufferTag, pvErrorCode: Integer);
-
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
 
+    /// <summary>
+    ///  初始化信息
+    /// </summary>
+    procedure ReloadForCommand;
     procedure Start;
     procedure Stop;
 
@@ -190,7 +193,8 @@ begin
   lvSource := TSourceNodes(FRequestNMEAMap.ValueMap[lvMapID]);
   FRequestNMEAMap.unLock;
 
-  sfLogger.logMessage('取消绑定请求数据源:%s<=>([%d]%s:%d)', [lvMapID, pvContext.SocketHandle, pvContext.RemoteAddr, pvContext.RemotePort]);
+  sfLogger.logMessage('取消绑定请求数据源:%s<=>([%d]%s:%d)',
+    [lvMapID, pvContext.SocketHandle, pvContext.RemoteAddr, pvContext.RemotePort]);
 
   if lvSource <> nil then
     lvSource.RemoveRequest(pvContext);
@@ -260,6 +264,7 @@ begin
       lvRequestNMEA := pvData;
     end;
 
+    // 非法的位置数据(不要取消当前绑定)
     if lvRequestNMEA = '' then Exit;
 
     if lvRequestNMEA <> pvContext.FRequestNMEA then
@@ -398,9 +403,65 @@ begin
             lvIniFile.ReadString('vrs_source', lvNtripSource.MountPoint + '.auth.user', '');
           lvNtripSource.DValue.ForceByName('auth_pass').AsString :=
             lvIniFile.ReadString('vrs_source', lvNtripSource.MountPoint + '.auth.pass', '');
+          lvNtripSource.DValue.ForceByName('mountpoint').AsString :=
+            lvIniFile.ReadString('vrs_source', lvNtripSource.MountPoint + '.mountpoint', lvNtripSource.MountPoint);
 
-          sfLogger.logMessage('挂载点[%s]请求数据源配置:%s:%d',
+          sfLogger.logMessage('挂载点[%s->%s]请求数据源配置:%s:%d',
             [lvNtripSource.MountPoint,
+            lvNtripSource.DValue.ForceByName('mountpoint').AsString,
+            lvNtripSource.DValue.ForceByName('host').AsString,
+            lvNtripSource.DValue.ForceByName('port').AsInteger]);             
+        end;
+      end;
+    finally
+      lvIniFile.Free;
+    end;
+  finally
+    ntripSourceList.UnLock;
+  end;
+
+
+end;
+
+procedure TdmService.ReloadForCommand;
+var
+  lvIniFile:TIniFile;
+  i: Integer;
+  lvNtripSource:TNtripSource;
+
+begin
+  ReloadSourceTable;
+  ntripSourceList.Lock;
+  try
+    ntripSourceList.Clear;
+    ntripSourceList.LoadFromFile(ExtractFilePath(ParamStr(0)) + 'sourceTable.txt');
+  
+    lvIniFile:= TIniFile.Create(ChangeFileExt(ParamStr(0), '.config.ini'));
+    try
+      FConvertNMEA := lvIniFile.ReadInteger('vrs_config', 'convert_nmea', 0);
+
+      if ntripSourceList.Count = 0 then
+      begin
+        sfLogger.logMessage('警告:没有挂载点配置,无法进行正常服务!');
+      end else
+      begin  
+        for i := 0 to ntripSourceList.Count - 1 do
+        begin
+          lvNtripSource := ntripSourceList.Items[i];
+          lvNtripSource.DValue.ForceByName('host').AsString :=
+            lvIniFile.ReadString('vrs_source', lvNtripSource.MountPoint + '.host', '127.0.0.1');
+          lvNtripSource.DValue.ForceByName('port').AsInteger :=
+            lvIniFile.ReadInteger('vrs_source', lvNtripSource.MountPoint + '.port', 9984);
+          lvNtripSource.DValue.ForceByName('auth_user').AsString :=
+            lvIniFile.ReadString('vrs_source', lvNtripSource.MountPoint + '.auth.user', '');
+          lvNtripSource.DValue.ForceByName('auth_pass').AsString :=
+            lvIniFile.ReadString('vrs_source', lvNtripSource.MountPoint + '.auth.pass', '');
+          lvNtripSource.DValue.ForceByName('mountpoint').AsString :=
+            lvIniFile.ReadString('vrs_source', lvNtripSource.MountPoint + '.mountpoint', lvNtripSource.MountPoint);
+
+          sfLogger.logMessage('挂载点[%s->%s]请求数据源配置:%s:%d',
+            [lvNtripSource.MountPoint,
+            lvNtripSource.DValue.ForceByName('mountpoint').AsString,
             lvNtripSource.DValue.ForceByName('host').AsString,
             lvNtripSource.DValue.ForceByName('port').AsInteger]);             
         end;
