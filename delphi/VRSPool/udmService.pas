@@ -224,11 +224,10 @@ begin
 
   if lvSource <> nil then
   begin
-
     lvSource.Lock;
     try
       j := 0;
-      for i := 0 to lvSource.FRequestHandleList.Count - 1 do
+      for i := lvSource.FRequestHandleList.Count - 1 downto 0 do
       begin
         AddRef(pvBuf);
         if TIocpClientContext(lvSource.FRequestHandleList[i]).PostWSASendRequest(pvBuf, len, dtNone, 1) then
@@ -236,6 +235,7 @@ begin
           inc(j);
         end else
         begin
+          //lvSource.FRequestHandleList.Delete(i);
           ReleaseRef(pvBuf);
         end;
       end;
@@ -254,11 +254,22 @@ procedure TdmService.DoRecvRequest(pvContext: TMyClientContext; pvMountPoint,
     pvData: string);
 var
   lvRequestNMEA:String;
+  lvPtr:PChar;
 begin
   try
     if FConvertNMEA = 1 then
     begin
-      lvRequestNMEA := ConvertRequestNMEA(pvData);
+      lvRequestNMEA := pvData;
+      lvPtr := PChar(lvRequestNMEA);
+      if StartWith(lvPtr, '$PCMD,', False) then
+      begin
+        Inc(lvPtr, 6);
+        SkipUntil(lvPtr, ['$']);
+        lvRequestNMEA := lvPtr;
+      end;       
+      sfLogger.logMessage('(%s:%d)接收到请求数据:%s_convert_start', [pvContext.RemoteAddr, pvContext.RemotePort,pvData]);
+      lvRequestNMEA := ConvertRequestNMEA(lvRequestNMEA);
+      sfLogger.logMessage('(%s:%d)接收到请求数据:%s_convert_end', [pvContext.RemoteAddr, pvContext.RemotePort,lvRequestNMEA]);
     end else
     begin
       lvRequestNMEA := pvData;
@@ -326,7 +337,7 @@ begin
       lvKickTickout := lvTickCount;
     end;
 
-    if tick_diff(lvCheckTimeOut, lvTickCount) > 3000 then
+    if tick_diff(lvCheckTimeOut, lvTickCount) > 10000 then
     begin
       s := FTcpSvr.GetContextWorkingInfo();
       if s <> '' then
@@ -564,7 +575,7 @@ begin
 
            if not lvFindSource then
            begin
-             sfLogger.logMessage('请求的挂载点:%s不存在。', [FRequest.MountPoint]);
+             sfLogger.logMessage('(%s:%d)请求的挂载点:%s不存在。', [self.RemoteAddr, Self.RemotePort, FRequest.MountPoint]);
            end;
          end;
 
@@ -576,15 +587,14 @@ begin
          end;
 
          self.PostWSASendRequest(PAnsiChar(ICY_200_OK), length(ICY_200_OK), dtNone);
-         sfLogger.logMessage('接收到请求数据,挂载点:%s', [FRequest.MountPoint]);
+         sfLogger.logMessage('(%s:%d)接收到请求数据,挂载点:%s', [self.RemoteAddr, Self.RemotePort,FRequest.MountPoint]);
          Inc(lvPtr);
          Inc(i);
        end else if r = 2 then
        begin  // 接收到请求数据
          lvNMEA := Trim(FRequest.Context);
          if lvNMEA <> '' then
-         begin
-           sfLogger.logMessage('接收到请求数据:%s', [lvNMEA]);
+         begin   
            dmService.DoRecvRequest(self, FRequest.MountPoint, lvNMEA);
          end;
          Inc(lvPtr);
@@ -595,7 +605,7 @@ begin
          Inc(i);
        end else
        begin
-        sfLogger.logMessage('接收到的客户端请求数据, 解码异常:%d', [r]);
+        sfLogger.logMessage('(%s:%d)接收到的客户端请求数据, 解码异常:%d', [self.RemoteAddr, Self.RemotePort,r]);
         self.RequestDisconnect(Format('接收到的客户端请求数据, 解码异常:%d', [r]));
         Break;
        end; 
