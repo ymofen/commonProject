@@ -48,6 +48,15 @@ object Form1: TForm1
       TabOrder = 2
       OnClick = btnClearClick
     end
+    object btnObjectTester: TButton
+      Left = 504
+      Top = 21
+      Width = 145
+      Height = 25
+      Caption = 'btnObjectTester'
+      TabOrder = 3
+      OnClick = btnObjectTesterClick
+    end
   end
   object mmoData: TMemo
     Left = 0
