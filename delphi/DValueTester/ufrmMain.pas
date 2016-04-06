@@ -4,7 +4,8 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ExtCtrls, utils_DValue, utils.strings;
+  Dialogs, StdCtrls, ExtCtrls, utils_DValue, utils.strings, ComCtrls,
+  IdMultipartFormData, utils_dvalue_multiparts;
 
 type
   TForm1 = class(TForm)
@@ -14,10 +15,17 @@ type
     btnEncodeJSON: TButton;
     btnClear: TButton;
     btnObjectTester: TButton;
+    pgcMain: TPageControl;
+    tsJSON: TTabSheet;
+    tsMultiParts: TTabSheet;
+    btnSave: TButton;
+    btnParse: TButton;
     procedure btnClearClick(Sender: TObject);
     procedure btnEncodeJSONClick(Sender: TObject);
     procedure btnObjectTesterClick(Sender: TObject);
+    procedure btnParseClick(Sender: TObject);
     procedure btnParseJSONClick(Sender: TObject);
+    procedure btnSaveClick(Sender: TObject);
   private
     { Private declarations }
   public
@@ -102,6 +110,15 @@ begin
 
 end;
 
+procedure TForm1.btnParseClick(Sender: TObject);
+var
+  lvDVAlue:TDValue;
+begin
+  lvDVAlue := TDValue.Create();
+  MultiPartsParseFromFile(lvDVAlue, 'multparts.dat');
+  lvDVAlue.Free;
+end;
+
 procedure TForm1.btnParseJSONClick(Sender: TObject);
 var
   lvDValue, lvDValue2, lvAccountGroup:TDValue;
@@ -117,6 +134,40 @@ begin
 
 //  lvAccountGroup := lvDValue.ForceByPath('AccountList.AccountGroup');
 //  ShowMessage(lvAccountGroup.Items[0].ForceByName('Name').Value.AsString);
+end;
+
+procedure TForm1.btnSaveClick(Sender: TObject);
+var
+  lvMultiParts:TIdMultiPartFormDataStream;
+  lvFileStream:TFileStream;
+
+  lvDValue:TDValue;
+
+  lvBuilder:TDBufferBuilder;
+begin
+//  lvMultiParts := TIdMultiPartFormDataStream.Create;
+//  lvMultiParts.AddFormField('备注', 'HELLO中国' + sLineBreak + 'World 你好');
+//  lvMultiParts.AddFormField('fileID', ExtractFileName(ParamStr(0)));
+//  lvMultiParts.AddFile('data', ExtractFileName(ParamStr(0)), 'application/x-msdownload');
+//  lvFileStream := TFileStream.Create(ExtractFilePath(ParamStr(0)) + 'multparts.dat', fmCreate);
+//  lvMultiParts.Position := 0;
+//  lvFileStream.CopyFrom(lvMultiParts, lvMultiParts.Size);
+//  lvFileStream.Free;
+//  lvMultiParts.Free;
+
+
+  lvBuilder := TDBufferBuilder.Create;
+  lvDValue := TDValue.Create();
+  lvDValue.ForceByName('备注').AsString:= 'HELLO中国' + sLineBreak + 'World 你好';
+  lvDValue.ForceByName('fileID').AsString:= ExtractFileName(ParamStr(0));
+  AddFilePart(lvDValue, 'data', ParamStr(0));
+  MultiPartsEncode(lvDValue, lvBuilder, '');
+  lvDValue.Free;
+
+  lvBuilder.SaveToFile(ExtractFilePath(ParamStr(0)) + 'dvalue_multparts.dat');
+  lvBuilder.Free;
+
+
 end;
 
 end.
