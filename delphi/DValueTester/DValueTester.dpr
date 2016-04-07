@@ -2,7 +2,8 @@ program DValueTester;
 
 uses
   Forms,
-  ufrmMain in 'ufrmMain.pas' {Form1};
+  ufrmMain in 'ufrmMain.pas' {Form1},
+  utils_dvalue_multiparts in '..\..\..\diocp-v5\source\utils_dvalue_multiparts.pas';
 
 {$R *.res}
 
