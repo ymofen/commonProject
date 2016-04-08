@@ -116,6 +116,7 @@ var
 begin
   lvDVAlue := TDValue.Create();
   MultiPartsParseFromFile(lvDVAlue, 'multparts.dat');
+  ShowMessage(JSONEncode(lvDValue, False, True, [vdtStream, vdtObject]));
   lvDVAlue.Free;
 end;
 
@@ -145,15 +146,14 @@ var
 
   lvBuilder:TDBufferBuilder;
 begin
-//  lvMultiParts := TIdMultiPartFormDataStream.Create;
-//  lvMultiParts.AddFormField('备注', 'HELLO中国' + sLineBreak + 'World 你好');
-//  lvMultiParts.AddFormField('fileID', ExtractFileName(ParamStr(0)));
-//  lvMultiParts.AddFile('data', ExtractFileName(ParamStr(0)), 'application/x-msdownload');
-//  lvFileStream := TFileStream.Create(ExtractFilePath(ParamStr(0)) + 'multparts.dat', fmCreate);
-//  lvMultiParts.Position := 0;
-//  lvFileStream.CopyFrom(lvMultiParts, lvMultiParts.Size);
-//  lvFileStream.Free;
-//  lvMultiParts.Free;
+  lvMultiParts := TIdMultiPartFormDataStream.Create;
+  lvMultiParts.AddFormField('fileID', ExtractFileName(ParamStr(0)));
+  lvMultiParts.AddFile('data', ExtractFileName(ParamStr(0)), 'application/x-msdownload');
+  lvFileStream := TFileStream.Create(ExtractFilePath(ParamStr(0)) + 'multparts.dat', fmCreate);
+  lvMultiParts.Position := 0;
+  lvFileStream.CopyFrom(lvMultiParts, lvMultiParts.Size);
+  lvFileStream.Free;
+  lvMultiParts.Free;
 
 
   lvBuilder := TDBufferBuilder.Create;

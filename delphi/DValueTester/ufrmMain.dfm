@@ -23,8 +23,6 @@ object Form1: TForm1
     TabOrder = 0
     object tsJSON: TTabSheet
       Caption = 'tsJSON'
-      ExplicitWidth = 281
-      ExplicitHeight = 165
       object pnlTop: TPanel
         Left = 0
         Top = 0
@@ -33,7 +31,6 @@ object Form1: TForm1
         Align = alTop
         Caption = 'pnlTop'
         TabOrder = 0
-        ExplicitWidth = 929
         object btnParseJSON: TButton
           Left = 0
           Top = 21
@@ -120,16 +117,11 @@ object Form1: TForm1
           '  }'
           '}')
         TabOrder = 1
-        ExplicitTop = 0
-        ExplicitWidth = 929
-        ExplicitHeight = 460
       end
     end
     object tsMultiParts: TTabSheet
       Caption = 'tsMultiParts'
       ImageIndex = 1
-      ExplicitWidth = 281
-      ExplicitHeight = 165
       object btnSave: TButton
         Left = 16
         Top = 16
