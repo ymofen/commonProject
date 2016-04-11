@@ -113,10 +113,14 @@ end;
 procedure TForm1.btnParseClick(Sender: TObject);
 var
   lvDVAlue:TDValue;
+  lvTickCount:Cardinal;
 begin
   lvDVAlue := TDValue.Create();
+  lvTickCount := GetTickCount;
   MultiPartsParseFromFile(lvDVAlue, 'multparts.dat');
-  ShowMessage(JSONEncode(lvDValue, False, True, [vdtStream, vdtObject]));
+  Self.Caption := Format('MultiPartsParseFromFile, time:%d ns', [GetTickCount - lvTickCount]);
+  SavePartValueToFile(lvDVAlue, 'data', 'abc.dat');
+  ShowMessage(ExtractValueAsUtf8String(lvDVAlue, 'fileID', ''));
   lvDVAlue.Free;
 end;
 
@@ -160,7 +164,9 @@ begin
   lvDValue := TDValue.Create();
   lvDValue.ForceByName('备注').AsString:= 'HELLO中国' + sLineBreak + 'World 你好';
   lvDValue.ForceByName('fileID').AsString:= ExtractFileName(ParamStr(0));
+  AddFieldValue(lvDValue, 'e主键e', '很多字符abc');
   AddFilePart(lvDValue, 'data', ParamStr(0));
+
   MultiPartsEncode(lvDValue, lvBuilder, '');
   lvDValue.Free;
 
