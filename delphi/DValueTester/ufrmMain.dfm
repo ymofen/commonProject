@@ -18,7 +18,7 @@ object Form1: TForm1
     Top = 0
     Width = 929
     Height = 460
-    ActivePage = tsMultiParts
+    ActivePage = tsMsgPack
     Align = alClient
     TabOrder = 0
     object tsJSON: TTabSheet
@@ -139,6 +139,27 @@ object Form1: TForm1
         Caption = 'btnParse'
         TabOrder = 1
         OnClick = btnParseClick
+      end
+    end
+    object tsMsgPack: TTabSheet
+      Caption = 'tsMsgPack'
+      ImageIndex = 2
+      object btnMsgPackSave: TButton
+        Left = 24
+        Top = 16
+        Width = 129
+        Height = 25
+        Caption = 'btnMsgPackSave'
+        TabOrder = 0
+        OnClick = btnMsgPackSaveClick
+      end
+      object btnMsgPackParse: TButton
+        Left = 24
+        Top = 72
+        Width = 137
+        Height = 25
+        Caption = 'btnMsgPackParse'
+        TabOrder = 1
       end
     end
   end

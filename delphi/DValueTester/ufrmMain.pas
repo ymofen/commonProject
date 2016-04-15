@@ -5,7 +5,8 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, ExtCtrls, utils_DValue, utils.strings, ComCtrls,
-  IdMultipartFormData, utils_dvalue_multiparts;
+  IdMultipartFormData, utils_dvalue_multiparts, utils_dvalue_msgpack,
+  SimpleMsgPack;
 
 type
   TForm1 = class(TForm)
@@ -20,8 +21,12 @@ type
     tsMultiParts: TTabSheet;
     btnSave: TButton;
     btnParse: TButton;
+    tsMsgPack: TTabSheet;
+    btnMsgPackSave: TButton;
+    btnMsgPackParse: TButton;
     procedure btnClearClick(Sender: TObject);
     procedure btnEncodeJSONClick(Sender: TObject);
+    procedure btnMsgPackSaveClick(Sender: TObject);
     procedure btnObjectTesterClick(Sender: TObject);
     procedure btnParseClick(Sender: TObject);
     procedure btnParseJSONClick(Sender: TObject);
@@ -88,6 +93,34 @@ begin
 //  ShowMessage(Format('%x, %d', [lvValue, lvValue]));
 
 
+end;
+
+procedure TForm1.btnMsgPackSaveClick(Sender: TObject);
+var
+  lvFileStream:TFileStream;
+  lvDValue:TDValue;
+  lvFileName:String;
+  lvMsgPack:TSimpleMsgPack;
+begin
+  lvFileName := ExtractFilePath(ParamStr(0)) + 'dvalue_msgpack.dat';
+  DeleteFile(lvFileName);
+
+  lvFileStream := TFileStream.Create(lvFileName, fmCreate);
+  try
+    lvDValue := TDValue.Create();
+    lvDValue.ForceByName('备注').AsString:= 'HELLO中国' + sLineBreak + 'World 你好';
+    lvDValue.ForceByName('fileID').AsString:= ExtractFileName(ParamStr(0));
+    lvDValue.ForceByName('data').AsStream.LoadFromFile(ParamStr(0));
+    MsgPackEncode(lvDValue, lvFileStream);
+    lvDValue.Free;
+  finally
+    lvFileStream.Free;
+  end;
+
+  lvMsgPack := TSimpleMsgPack.Create;
+  lvMsgPack.DecodeFromFile(lvFileName);
+  ShowMessage(lvMsgPack.ForcePathObject('备注').AsString);
+  lvMsgPack.Free;
 end;
 
 procedure TForm1.btnObjectTesterClick(Sender: TObject);
