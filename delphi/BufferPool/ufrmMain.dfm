@@ -126,7 +126,7 @@ object Form1: TForm1
     Text = '5'
   end
   object btnSpinLocker: TButton
-    Left = 704
+    Left = 687
     Top = 8
     Width = 75
     Height = 25

@@ -4,7 +4,8 @@ uses
   FastMM4,
   FastMM4Messages,
   Forms,
-  ufrmMain in 'ufrmMain.pas' {Form1};
+  ufrmMain in 'ufrmMain.pas' {Form1},
+  utils_threadinfo in 'utils_threadinfo.pas';
 
 {$R *.res}
 

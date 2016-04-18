@@ -36,13 +36,14 @@ type
     procedure btnThreadTesterClick(Sender: TObject);
   private
     { Private declarations }
-    FPool:PBufferPool;
+    FPool: PBufferPool;
 
     procedure Tester(ASyncWorker:TASyncWorker);
     procedure TesterForSpeed(ASyncWorker:TASyncWorker);
 
     procedure Tester2(ASyncWorker:TASyncWorker);
   public
+    destructor Destroy; override;
     { Public declarations }
   end;
 
@@ -51,8 +52,17 @@ var
 
 implementation
 
+uses
+  utils_threadinfo;
+
 
 {$R *.dfm}
+
+destructor TForm1.Destroy;
+begin
+  FinalizeForThreadInfo;
+  inherited Destroy;
+end;
 
 procedure TForm1.btnCheckBoundsClick(Sender: TObject);
 var
@@ -69,6 +79,7 @@ end;
 
 procedure TForm1.FormCreate(Sender: TObject);
 begin
+  InitalizeForThreadInfo;
   sfLogger.setAppender(TStringsAppender.Create(mmoLog.Lines));
   sfLogger.AppendInMainThread := true;
   TStringsAppender(sfLogger.Appender).AddThreadINfo := true;
@@ -105,6 +116,8 @@ end;
 procedure TForm1.btnPoolInfoClick(Sender: TObject);
 begin
   sfLogger.logMessage('get:%d, put:%d, addRef:%d, releaseRef:%d, size:%d', [FPool.FGet, FPool.FPut, FPool.FAddRef, FPool.FReleaseRef, FPool.FSize]);
+
+  sfLogger.logMessage('threadinfo:' + GetThreadsHintInfo);
 end;
 
 procedure TForm1.btnSimpleTesterClick(Sender: TObject);
@@ -198,6 +211,8 @@ begin
 
     AddRef(lvBuff);
 
+    SetCurrentThreadInfo('AddRef');
+
     // 获取附加数据
     Assert(GetAttachData(lvBuff, Pointer(lvQueue)) = 0);
     
@@ -223,7 +238,9 @@ begin
     lvBuff := GetBuffer(FPool);
     lvBuff^ := 1;
     AddRef(lvBuff);
+    SetCurrentThreadInfo('AddRef');
     //FillChar(lvBuff^, self.FPool.FBlockSize, 0);
+
     FillChar(lvBuff^, 16, 0);
     //FillChar(Result^, BLOCK_SIZE, 0);
 
@@ -231,6 +248,7 @@ begin
     inc(i);
   end;
   l := GetTickCount - l;
+  SetCurrentThreadInfo('Speed end...');
   sfLogger.logMessage('id:%d, t:%d, c:%d, speed:%f / s', [GetCurrentThreadId, l, i, (i * 1000.0000) / l]);
 end;
 
