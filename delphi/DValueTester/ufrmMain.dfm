@@ -18,7 +18,7 @@ object Form1: TForm1
     Top = 0
     Width = 929
     Height = 460
-    ActivePage = tsMsgPack
+    ActivePage = tsJSON
     Align = alClient
     TabOrder = 0
     object tsJSON: TTabSheet
@@ -74,48 +74,6 @@ object Form1: TForm1
         Width = 921
         Height = 367
         Align = alClient
-        Lines.Strings = (
-          '{'
-          '  "AccountList":                                       //'#24080#22871#21015#34920
-          '  {'
-          '   "AccountGroup":                                  //'#24080#22871#20998#32452
-          '    ['
-          '      {'
-          
-            '        "Id":1,                                      //'#20998#32452'ID('#20174'1'#24320#22987 +
-            ')'
-          '        "Name":"'#26131#26539#21697#29260#24080#22871'",                       //'#20998#32452#21517#31216' '
-          '        "AccountConfig":                             //'#24080#22871#37197#32622
-          '         [ '
-          '            {'
-          '              "OnlyCode":10001,                    //'#21807#19968#30721
-          '              "DbConfig":'
-          '               {'
-          
-            '                   "main":"Yr_Sale",                //'#20027#25968#25454#24211#37197#32622'ID('#25968 +
-            #25454#24211#22788#29702#26381#21153#22120#25968#25454#28304'ID) '
-          
-            '                 "sys":"Yr_sys"                   //'#31995#32479#25454#24211#37197#32622'ID('#25968#25454#24211 +
-            #22788#29702#26381#21153#22120#25968#25454#28304'ID) '
-          '               }  // end DbConfig'
-          '            },'#9'// end AccountConfig-1'#9#9#9'  '
-          '            {'
-          '              "OnlyCode":10002,                    //'#21807#19968#30721
-          '            },  // end AccountConfig-2 '
-          '          ],  // end AccountConfig'
-          '      }, // end array 1'
-          
-            '      //---------------------------------------'#31532#20108#20010#24179#34892#24080#22871'----------' +
-            '-----------------------------------'
-          '      {'
-          
-            '        "Id":2,                                      //'#20998#32452'ID('#20174'1'#24320#22987 +
-            ')'
-          '        "Name":"'#24935#21451#21697#29260#24080#22871'",                       //'#20998#32452#21517#31216' '
-          '      },'
-          '    ]'
-          '  }'
-          '}')
         TabOrder = 1
       end
     end
@@ -144,22 +102,14 @@ object Form1: TForm1
     object tsMsgPack: TTabSheet
       Caption = 'tsMsgPack'
       ImageIndex = 2
-      object btnMsgPackSave: TButton
+      object btnMsgPackTester: TButton
         Left = 24
         Top = 16
         Width = 129
         Height = 25
-        Caption = 'btnMsgPackSave'
+        Caption = 'btnMsgPackTester'
         TabOrder = 0
-        OnClick = btnMsgPackSaveClick
-      end
-      object btnMsgPackParse: TButton
-        Left = 24
-        Top = 72
-        Width = 137
-        Height = 25
-        Caption = 'btnMsgPackParse'
-        TabOrder = 1
+        OnClick = btnMsgPackTesterClick
       end
     end
   end
