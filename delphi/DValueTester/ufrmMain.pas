@@ -5,8 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, ExtCtrls, utils_DValue, utils.strings, ComCtrls,
-  utils_dvalue_multiparts, utils_dvalue_msgpack,
-  SimpleMsgPack;
+  utils_dvalue_multiparts, utils_dvalue_msgpack;
 
 type
   TForm1 = class(TForm)
@@ -91,7 +90,6 @@ var
   lvFileStream:TFileStream;
   lvDValue:TDValue;
   lvFileName:String;
-  lvMsgPack:TSimpleMsgPack;
 begin
   lvFileName := ExtractFilePath(ParamStr(0)) + 'dvalue_msgpack.dat';
   DeleteFile(lvFileName);
@@ -114,10 +112,6 @@ begin
   lvDValue.ForceByName('data').AsStream.SaveToFile('dvalue_parse.dat');
   lvDValue.Free;
 
-  lvMsgPack := TSimpleMsgPack.Create;
-  lvMsgPack.DecodeFromFile(lvFileName);
-  ShowMessage(lvMsgPack.ForcePathObject('hello.±¸×¢').AsString);
-  lvMsgPack.Free;
 end;
 
 procedure TForm1.btnObjectTesterClick(Sender: TObject);
