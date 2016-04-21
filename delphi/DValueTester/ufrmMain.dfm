@@ -18,7 +18,7 @@ object Form1: TForm1
     Top = 0
     Width = 929
     Height = 460
-    ActivePage = tsJSON
+    ActivePage = tsMultiParts
     Align = alClient
     TabOrder = 0
     object tsJSON: TTabSheet
@@ -98,6 +98,15 @@ object Form1: TForm1
         TabOrder = 1
         OnClick = btnParseClick
       end
+      object btnParseAFile: TButton
+        Left = 16
+        Top = 152
+        Width = 75
+        Height = 25
+        Caption = 'btnParseAFile'
+        TabOrder = 2
+        OnClick = btnParseAFileClick
+      end
     end
     object tsMsgPack: TTabSheet
       Caption = 'tsMsgPack'
@@ -112,5 +121,9 @@ object Form1: TForm1
         OnClick = btnMsgPackTesterClick
       end
     end
+  end
+  object dlgOpenFile: TOpenDialog
+    Left = 456
+    Top = 232
   end
 end

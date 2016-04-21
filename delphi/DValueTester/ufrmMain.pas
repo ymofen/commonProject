@@ -23,10 +23,13 @@ type
     btnParse: TButton;
     tsMsgPack: TTabSheet;
     btnMsgPackTester: TButton;
+    btnParseAFile: TButton;
+    dlgOpenFile: TOpenDialog;
     procedure btnClearClick(Sender: TObject);
     procedure btnEncodeJSONClick(Sender: TObject);
     procedure btnMsgPackTesterClick(Sender: TObject);
     procedure btnObjectTesterClick(Sender: TObject);
+    procedure btnParseAFileClick(Sender: TObject);
     procedure btnParseClick(Sender: TObject);
     procedure btnParseJSONClick(Sender: TObject);
     procedure btnSaveClick(Sender: TObject);
@@ -134,6 +137,30 @@ begin
   lvDValue.Value.SetArraySize(2);
   
   lvDValue.Free;
+
+end;
+
+procedure TForm1.btnParseAFileClick(Sender: TObject);
+var
+  lvDVAlue:TDValue;
+  lvTickCount:Cardinal;
+begin
+  if not dlgOpenFile.Execute then Exit;
+  lvDVAlue := TDValue.Create();
+  lvTickCount := GetTickCount;
+  MultiPartsParseFromFile(lvDVAlue, dlgOpenFile.FileName);
+  Self.Caption := Format('MultiPartsParseFromFile, time:%d ns', [GetTickCount - lvTickCount]);
+
+  if lvDVAlue.Count > 0 then
+  begin
+    ShowMessage(
+     Format('%s:%s', [lvDVAlue.Items[0].ForceByName('name').AsString,
+            ExtractValueAsUtf8String(lvDVAlue, lvDVAlue.Items[0].ForceByName('name').AsString, '')]));
+  end;
+
+  ShowMessage(JSONEncode(lvDVAlue, false, True));
+  lvDVAlue.Free;
+
 
 end;
 
