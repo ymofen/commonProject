@@ -108,7 +108,7 @@ begin
   lvFileStream := TFileStream.Create(lvFileName, fmCreate);
   try
     lvDValue := TDValue.Create();
-    lvDValue.ForceByName('备注').AsString:= 'HELLO中国' + sLineBreak + 'World 你好';
+    lvDValue.ForceByPath('hello.备注').AsString:= 'HELLO中国' + sLineBreak + 'World 你好';
     lvDValue.ForceByName('fileID').AsString:= ExtractFileName(ParamStr(0));
     lvDValue.ForceByName('data').AsStream.LoadFromFile(ParamStr(0));
     MsgPackEncode(lvDValue, lvFileStream);
@@ -117,9 +117,15 @@ begin
     lvFileStream.Free;
   end;
 
+  lvDValue := TDValue.Create();
+  MsgPackParseFromFile(lvFileName, lvDValue);
+  ShowMessage(lvDValue.ForceByPath('hello.备注').AsString);
+  lvDValue.ForceByName('data').AsStream.SaveToFile('dvalue_parse.dat');
+  lvDValue.Free;
+
   lvMsgPack := TSimpleMsgPack.Create;
   lvMsgPack.DecodeFromFile(lvFileName);
-  ShowMessage(lvMsgPack.ForcePathObject('备注').AsString);
+  ShowMessage(lvMsgPack.ForcePathObject('hello.备注').AsString);
   lvMsgPack.Free;
 end;
 
