@@ -5,8 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, ExtCtrls, utils_DValue, utils.strings, ComCtrls,
-  IdMultipartFormData, utils_dvalue_multiparts, utils_dvalue_msgpack,
-  SimpleMsgPack;
+  utils_dvalue_multiparts, utils_dvalue_msgpack;
 
 type
   TForm1 = class(TForm)
@@ -22,12 +21,14 @@ type
     btnSave: TButton;
     btnParse: TButton;
     tsMsgPack: TTabSheet;
-    btnMsgPackSave: TButton;
-    btnMsgPackParse: TButton;
+    btnMsgPackTester: TButton;
+    btnParseAFile: TButton;
+    dlgOpenFile: TOpenDialog;
     procedure btnClearClick(Sender: TObject);
     procedure btnEncodeJSONClick(Sender: TObject);
-    procedure btnMsgPackSaveClick(Sender: TObject);
+    procedure btnMsgPackTesterClick(Sender: TObject);
     procedure btnObjectTesterClick(Sender: TObject);
+    procedure btnParseAFileClick(Sender: TObject);
     procedure btnParseClick(Sender: TObject);
     procedure btnParseJSONClick(Sender: TObject);
     procedure btnSaveClick(Sender: TObject);
@@ -53,54 +54,42 @@ begin
 end;
 
 procedure TForm1.btnEncodeJSONClick(Sender: TObject);
-const
-  MemoryDelta = $2000; { Must be a power of 2 }
-
 var
   lvDValue, lvItem:TDValue;
   lvValue:Integer;
   lvSB:TDStringBuilder;
+  s:String;
 begin
   lvDValue := TDValue.Create();
   lvDValue.ForceByPath('p2.obj').BindObject(Self, faNone);
   lvDValue.ForceByPath('p2.n').AsInteger := 3;
   lvDValue.ForceByName('name').AsString := '张三abc';
-//  lvDValue.ForceByName('__msgid').AsInteger := 1001;
-//  lvDValue.ForceByPath('p1.name').AsString := '杨茂丰';
-//  lvDValue.ForceByPath('p2.p2_1.name').AsString := '杨茂丰';
-//  lvDValue.ForceByPath('p2.num').AsInteger := 1;
-//
-//
-//  lvItem := lvDValue.ForceByName('array').AddArrayChild;
-//  lvItem.ForceByName('key1').AsString := '数组元素1';
-//  lvDValue.ForceByName('array').AddArrayChild.AsString := '数组元素2';
+  lvDValue.ForceByName('__msgid').AsInteger := 1001;
+  lvDValue.ForceByPath('p1.name').AsString := 'D10.天地弦';
+  lvDValue.ForceByPath('p2.p2_1.name').AsString := 'D10.天地弦';
+  lvDValue.ForceByPath('p2.num').AsInteger := 1;
 
-  ShowMessage(JSONEncode(lvDValue, true, true, [vdtObject]));
+
+  lvItem := lvDValue.ForceByName('array').AddArrayChild;
+  lvItem.ForceByName('key1').AsString := '数组元素1';
+  lvDValue.ForceByName('array').AddArrayChild.AsString := '数组元素2';
+
+  s :=JSONEncode(lvDValue, true, False, [vdtObject]);
+  if trim(mmoData.Lines.Text) = '' then
+  begin
+    mmoData.Lines.Add(s);
+  end;
+
   lvDValue.Free;
 
-  lvSB := TDStringBuilder.Create;
-  try
-    lvSB.Append('').AppendLine('杨茂丰').Append(123).Append(true).Append(',').Append(3.1415926).AppendQuoteStr('杨一恒');
-    ShowMessage(lvSB.ToString);
-  finally
-    lvSB.Free;
-  end;
-//
-//  lvValue := 8192;
-//
-//  lvValue := (lvValue + (MemoryDelta - 1)) and not (MemoryDelta - 1);
-//
-//  ShowMessage(Format('%x, %d', [lvValue, lvValue]));
-
-
+  ShowMessage(s);
 end;
 
-procedure TForm1.btnMsgPackSaveClick(Sender: TObject);
+procedure TForm1.btnMsgPackTesterClick(Sender: TObject);
 var
   lvFileStream:TFileStream;
   lvDValue:TDValue;
   lvFileName:String;
-  lvMsgPack:TSimpleMsgPack;
 begin
   lvFileName := ExtractFilePath(ParamStr(0)) + 'dvalue_msgpack.dat';
   DeleteFile(lvFileName);
@@ -123,10 +112,6 @@ begin
   lvDValue.ForceByName('data').AsStream.SaveToFile('dvalue_parse.dat');
   lvDValue.Free;
 
-  lvMsgPack := TSimpleMsgPack.Create;
-  lvMsgPack.DecodeFromFile(lvFileName);
-  ShowMessage(lvMsgPack.ForcePathObject('hello.备注').AsString);
-  lvMsgPack.Free;
 end;
 
 procedure TForm1.btnObjectTesterClick(Sender: TObject);
@@ -149,6 +134,30 @@ begin
 
 end;
 
+procedure TForm1.btnParseAFileClick(Sender: TObject);
+var
+  lvDVAlue:TDValue;
+  lvTickCount:Cardinal;
+begin
+  if not dlgOpenFile.Execute then Exit;
+  lvDVAlue := TDValue.Create();
+  lvTickCount := GetTickCount;
+  MultiPartsParseFromFile(lvDVAlue, dlgOpenFile.FileName);
+  Self.Caption := Format('MultiPartsParseFromFile, time:%d ns', [GetTickCount - lvTickCount]);
+
+  if lvDVAlue.Count > 0 then
+  begin
+    ShowMessage(
+     Format('%s:%s', [lvDVAlue.Items[0].ForceByName('name').AsString,
+            ExtractValueAsUtf8String(lvDVAlue, lvDVAlue.Items[0].ForceByName('name').AsString, '')]));
+  end;
+
+  ShowMessage(JSONEncode(lvDVAlue, false, True));
+  lvDVAlue.Free;
+
+
+end;
+
 procedure TForm1.btnParseClick(Sender: TObject);
 var
   lvDVAlue:TDValue;
@@ -168,36 +177,23 @@ var
   lvDValue, lvDValue2, lvAccountGroup:TDValue;
 begin
   lvDValue := TDValue.Create();
-  JSONParser(mmoData.Lines.Text, lvDValue);
-  ShowMessage(JSONEncode(lvDValue, False));
+  try
+    JSONParser(mmoData.Lines.Text, lvDValue);
+    ShowMessage(JSONEncode(lvDValue, False));
+  finally
+    lvDValue.Free;
+  end;
 
-//  lvDValue2 := TDValue.Create();
-//  JSONParser(lvDValue.ForceByName('main').AsString, lvDValue2);
-//  ShowMessage(JSONEncode(lvDValue2, False));
-
-
-//  lvAccountGroup := lvDValue.ForceByPath('AccountList.AccountGroup');
-//  ShowMessage(lvAccountGroup.Items[0].ForceByName('Name').Value.AsString);
 end;
 
 procedure TForm1.btnSaveClick(Sender: TObject);
 var
-  lvMultiParts:TIdMultiPartFormDataStream;
   lvFileStream:TFileStream;
 
   lvDValue:TDValue;
 
   lvBuilder:TDBufferBuilder;
 begin
-  lvMultiParts := TIdMultiPartFormDataStream.Create;
-  lvMultiParts.AddFormField('fileID', ExtractFileName(ParamStr(0)));
-  lvMultiParts.AddFile('data', ExtractFileName(ParamStr(0)), 'application/x-msdownload');
-  lvFileStream := TFileStream.Create(ExtractFilePath(ParamStr(0)) + 'multparts.dat', fmCreate);
-  lvMultiParts.Position := 0;
-  lvFileStream.CopyFrom(lvMultiParts, lvMultiParts.Size);
-  lvFileStream.Free;
-  lvMultiParts.Free;
-
 
   lvBuilder := TDBufferBuilder.Create;
   lvDValue := TDValue.Create();
