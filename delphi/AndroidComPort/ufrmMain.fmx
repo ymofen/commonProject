@@ -8,14 +8,89 @@ object Form1: TForm1
   FormFactor.Height = 480
   FormFactor.Devices = [Desktop]
   DesignerMasterStyle = 3
-  object btnOpen: TButton
-    Position.X = 32.000000000000000000
-    Position.Y = 56.000000000000000000
-    Size.Width = 97.000000000000000000
-    Size.Height = 44.000000000000000000
+  object pnlTop: TPanel
+    Align = Top
+    Size.Width = 299.000000000000000000
+    Size.Height = 137.000000000000000000
     Size.PlatformDefault = False
     TabOrder = 0
-    Text = 'btnOpen'
-    OnClick = btnOpenClick
+    object btnOpen: TButton
+      Position.X = 16.000000000000000000
+      Position.Y = 48.000000000000000000
+      Size.Width = 97.000000000000000000
+      Size.Height = 30.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 0
+      Text = 'Open'
+      OnClick = btnOpenClick
+    end
+    object btnRecvBuffer: TButton
+      Position.X = 16.000000000000000000
+      Position.Y = 96.000000000000000000
+      Size.Width = 129.000000000000000000
+      Size.Height = 33.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 1
+      Text = 'Recv'
+      OnClick = btnRecvBufferClick
+    end
+    object edtPortName: TEdit
+      Touch.InteractiveGestures = [LongTap, DoubleTap]
+      TabOrder = 2
+      Text = '/dev/ttyHSL1'
+      Position.X = 16.000000000000000000
+      Position.Y = 8.000000000000000000
+      Size.Width = 129.000000000000000000
+      Size.Height = 32.000000000000000000
+      Size.PlatformDefault = False
+    end
+    object btnClose: TButton
+      Enabled = False
+      Position.X = 136.000000000000000000
+      Position.Y = 48.000000000000000000
+      Size.Width = 89.000000000000000000
+      Size.Height = 30.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 3
+      Text = 'Close'
+      OnClick = btnCloseClick
+    end
+  end
+  object pnlBottom: TPanel
+    Align = Bottom
+    Position.Y = 424.000000000000000000
+    Size.Width = 299.000000000000000000
+    Size.Height = 35.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 1
+    object edtSend: TEdit
+      Touch.InteractiveGestures = [LongTap, DoubleTap]
+      Align = Client
+      TabOrder = 0
+      Size.Width = 202.000000000000000000
+      Size.Height = 32.000000000000000000
+      Size.PlatformDefault = False
+    end
+    object btnSendBuffer: TButton
+      Align = Right
+      Position.X = 202.000000000000000000
+      Size.Width = 97.000000000000000000
+      Size.Height = 35.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 2
+      Text = 'Send'
+      OnClick = btnSendBufferClick
+    end
+  end
+  object mmoRecv: TMemo
+    Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
+    DataDetectorTypes = []
+    Align = Client
+    Size.Width = 299.000000000000000000
+    Size.Height = 287.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 2
+    Viewport.Width = 291.000000000000000000
+    Viewport.Height = 279.000000000000000000
   end
 end

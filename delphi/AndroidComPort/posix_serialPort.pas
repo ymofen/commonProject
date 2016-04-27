@@ -4,7 +4,7 @@ interface
 
 uses
   SysUtils,
-  Posix.Base, Posix.Dirent, Posix.Errno, Posix.Fnmatch,
+  Posix.Base, Posix.SysSelect, Posix.Dirent, Posix.Errno, Posix.Fnmatch,
   Posix.Langinfo, Posix.Locale, Posix.Pthread, Posix.Stdio, Posix.Stdlib,
   Posix.String_, Posix.SysSysctl, Posix.Time, Posix.Unistd, Posix.Utime,
   Posix.Wordexp, Posix.Pwd, Posix.Signal,
@@ -18,13 +18,23 @@ type
   TSerialStopBits = (sb1, sb2);
   TSerialFlowControl = (fcNone, fcXonXoff, fcHardware);
 
-function OpenPort(pvPort:string): Integer;
+function OpenSerialPort(pvPort:string): Integer;
 
-function ReadBuffer(pvHandle:Integer; vBuf:Pointer; pvLength:Integer): Integer;
+function ReadSerialPort(fd: Integer; vBuf: Pointer; pvLength: Integer):
+    Integer; overload;
+
+function ReadSerialPort(fd: Integer; vBuf: Pointer; len, timeout: Integer):
+    Integer; overload;
+
+function WriteSerialPort(fd: Integer; vBuf: Pointer; len: Integer): Integer;
+
+function CloseSerialPort(fd:Integer): Integer;
 
 function ConfigSerialPort(fd: Integer; baudrate: TSerialBaudRate; flow_ctrl:
     TSerialFlowControl; databits: TSerialDataBits; stopbits: TSerialStopBits;
     parity: TSerialParity): Integer;
+
+procedure CheckSerialOperaResult(r:Integer);
 
 implementation
 
@@ -32,16 +42,42 @@ const
   BaudRatesValue: array [TSerialBaudRate] of Integer = (B4000000,
     B115200, B19200, B9600, B4800, B2400, B1200,	B300);
 
-function OpenPort(pvPort:string): Integer;
+function OpenSerialPort(pvPort:string): Integer;
 var
   M:TMarshaller;
 begin
   Result := __open(M.AsAnsi(pvPort, CP_UTF8).ToPointer, O_RDWR OR O_NOCTTY);
 end;
 
-function ReadBuffer(pvHandle:Integer; vBuf:Pointer; pvLength:Integer): Integer;
+function ReadSerialPort(fd: Integer; vBuf: Pointer; len, timeout: Integer):
+    Integer;
+var
+  lvFDRead:fd_set;
+  lvTimeOut: timeval;
+  r:Integer;
 begin
-  Result := __read(pvHandle, vBuf, pvLength);
+  FD_ZERO(lvFDRead);
+  _FD_SET(fd, lvFDRead);
+  lvTimeOut.tv_sec := trunc(timeout * 20 / 115200 + 2);
+  lvTimeOut.tv_usec := 0;
+
+  //如果返回0，代表在描述符状态改变前已超过timeout时间,错误返回-1
+  r := select(fd + 1, @lvFDRead, nil, nil, @lvTimeOut);
+  if r = -1 then Exit(-1);
+
+  if __FD_ISSET(fd, lvFDRead) then
+  begin
+    Result := __read(fd, vBuf, len);
+  end else
+  begin
+    Exit(-1);
+  end;
+end;
+
+
+function ReadSerialPort(fd: Integer; vBuf: Pointer; pvLength: Integer): Integer;
+begin
+  Result := __read(fd, vBuf, pvLength);
 end;
 
 function ConfigSerialPort(fd: Integer; baudrate: TSerialBaudRate; flow_ctrl:
@@ -136,8 +172,8 @@ begin
   end;
 
   //设置等待时间和最小接收字符
-	lvOptions.c_cc[VTIME] = 150; ///* 读取一个字符等待1*(1/10)s */
-	lvOptions.c_cc[VMIN] = 0; ///* 读取字符的最少个数为1 */
+	lvOptions.c_cc[VTIME] := 150; ///* 读取一个字符等待1*(1/10)s */
+	lvOptions.c_cc[VMIN] := 0; ///* 读取字符的最少个数为1 */
 
 	//如果发生数据溢出，接收数据，但是不再读取 刷新收到的数据但是不读
 	tcflush(fd, TCIFLUSH);
@@ -148,5 +184,28 @@ begin
 
   Result := 0;
 end;
+
+function CloseSerialPort(fd:Integer): Integer;
+begin
+  Result := __close(fd);
+end;
+
+function WriteSerialPort(fd: Integer; vBuf: Pointer; len: Integer): Integer;
+begin
+  Result := __write(fd, vBuf, len);
+//  if Result <> len then
+//  begin
+//    tcflush(fd, TCOFLUSH);
+//  end;
+end;
+
+procedure CheckSerialOperaResult(r:Integer);
+begin
+  if r = -1 then
+    RaiseLastOSError;
+end;
+
+
+
 
 end.
