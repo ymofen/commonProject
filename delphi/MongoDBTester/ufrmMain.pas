@@ -170,7 +170,7 @@ var
 begin
   if FMongoClient = nil then raise Exception.Create('请先建立连接');
 
-  lvCollection := mongoc_client_get_collection(FMongoClient, 'qt_db', 'apps');
+  lvCollection := mongoc_client_get_collection(FMongoClient, 'core', 'apps');
 
   lvBson := bson_new();
   bson_init(lvBson);
@@ -180,7 +180,7 @@ begin
 
   while (mongoc_cursor_next(lvCursor, @lvBsonArr)) do
   begin
-    lvLength := 1024;
+    lvLength := 0;
     lvBuff := bson_as_json(lvBsonArr[0], lvLength);
     ShowMessage(lvBuff);
   end;

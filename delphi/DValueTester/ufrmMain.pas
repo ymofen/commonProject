@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, ExtCtrls, utils_DValue, utils.strings, ComCtrls,
-  utils_dvalue_multiparts, utils_dvalue_msgpack;
+  utils_dvalue_multiparts, utils_dvalue_msgpack, utils_base64;
 
 type
   TForm1 = class(TForm)
@@ -24,7 +24,15 @@ type
     btnMsgPackTester: TButton;
     btnParseAFile: TButton;
     dlgOpenFile: TOpenDialog;
+    tsDValue: TTabSheet;
+    btnDValue: TButton;
+    btnBase64: TButton;
+    Button1: TButton;
+    btnDValueCloneFrom: TButton;
+    procedure btnBase64Click(Sender: TObject);
     procedure btnClearClick(Sender: TObject);
+    procedure btnDValueClick(Sender: TObject);
+    procedure btnDValueCloneFromClick(Sender: TObject);
     procedure btnEncodeJSONClick(Sender: TObject);
     procedure btnMsgPackTesterClick(Sender: TObject);
     procedure btnObjectTesterClick(Sender: TObject);
@@ -32,6 +40,7 @@ type
     procedure btnParseClick(Sender: TObject);
     procedure btnParseJSONClick(Sender: TObject);
     procedure btnSaveClick(Sender: TObject);
+    procedure Button1Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -48,9 +57,57 @@ uses
 
 {$R *.dfm}
 
+procedure TForm1.btnBase64Click(Sender: TObject);
+var
+  lvDValue:TDValue;
+begin
+  lvDValue:= TDValue.Create();
+  lvDValue.Base64LoadFromFile(ParamStr(0));
+  lvDValue.Base64SaveToFile('base64OK.exe');
+  lvDValue.Free;
+end;
+
 procedure TForm1.btnClearClick(Sender: TObject);
 begin
   mmoData.Clear;
+end;
+
+procedure TForm1.btnDValueClick(Sender: TObject);
+var
+  lvDValue, lvDValue2:TDValue;
+
+begin
+  lvDValue := TDValue.Create();
+  lvDValue.AddArrayChild.AsString := 'abc';
+  ShowMessage(JSONEncode(lvDValue));
+  lvDValue.Delete(0);
+  ShowMessage(JSONEncode(lvDValue));
+  lvDValue.AddArrayChild.AsString := 'efg';
+
+  // ·ÖÀë´¦Àí
+  lvDValue2 := lvDValue.UnAttach(0);
+  ShowMessage(JSONEncode(lvDValue2));
+
+  lvDValue.Free;
+
+  lvDValue2.Free;
+
+
+end;
+
+procedure TForm1.btnDValueCloneFromClick(Sender: TObject);
+var
+  lvDValue, lvDValue2:TDValue;
+begin
+  lvDValue := TDValue.Create();
+  lvDValue2 := TDValue.Create();
+  lvDValue.ForceByName('a').AsInteger := 1;
+  lvDValue2.CloneFrom(lvDValue);
+  ShowMessage(Format('%d -> %d', [lvDValue.ForceByName('a').AsInteger, lvDValue2.ForceByName('a').AsInteger]));
+  lvDValue2.ForceByName('a').AsInteger := 3;
+  ShowMessage(Format('%d -> %d', [lvDValue.ForceByName('a').AsInteger, lvDValue2.ForceByName('a').AsInteger]));
+  lvDValue.Free;
+  lvDValue2.Free;
 end;
 
 procedure TForm1.btnEncodeJSONClick(Sender: TObject);
@@ -165,7 +222,7 @@ var
 begin
   lvDVAlue := TDValue.Create();
   lvTickCount := GetTickCount;
-  MultiPartsParseFromFile(lvDVAlue, 'multparts.dat');
+  MultiPartsParseFromFile(lvDVAlue, 'dvalue_multparts.dat');
   Self.Caption := Format('MultiPartsParseFromFile, time:%d ns', [GetTickCount - lvTickCount]);
   SavePartValueToFile(lvDVAlue, 'data', 'abc.dat');
   ShowMessage(ExtractValueAsUtf8String(lvDVAlue, 'fileID', ''));
@@ -207,6 +264,41 @@ begin
 
   lvBuilder.SaveToFile(ExtractFilePath(ParamStr(0)) + 'dvalue_multparts.dat');
   lvBuilder.Free;
+
+
+end;
+
+procedure TForm1.Button1Click(Sender: TObject);
+var
+  lvStream, lvStream2:TMemoryStream;
+  lvStr1, lvStr2:string;
+  l:Integer;
+
+begin
+  lvStream := TMemoryStream.Create();
+  lvStream2 := TMemoryStream.Create();
+  lvStream.LoadFromFile(ParamStr(0));
+  lvStr1 := Base64Encode(lvStream);
+  lvStr2 := Base64Encode(PByte(lvStream.Memory), lvStream.Size);
+  if lvStr1 <> lvStr2 then
+  begin
+    ShowMessage('no');
+  end;
+
+  lvStream2.SetSize(Length(lvStr2));
+  l:=Base64Decode(PByte(lvStr2), Length(lvStr2), PByte(lvStream2.Memory));
+  lvStream2.SetSize(l);
+  lvStream2.SaveToFile('base64_2.dat');
+
+  lvStream2.Clear;
+  Base64Decode(lvStr1, lvStream2);
+
+  lvStream2.SaveToFile('base64.dat');
+
+
+  lvStream.Free;
+  lvStream2.Free;
+  
 
 
 end;

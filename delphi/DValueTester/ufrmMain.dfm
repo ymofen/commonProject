@@ -18,7 +18,7 @@ object Form1: TForm1
     Top = 0
     Width = 929
     Height = 460
-    ActivePage = tsJSON
+    ActivePage = tsDValue
     Align = alClient
     TabOrder = 0
     object tsJSON: TTabSheet
@@ -125,6 +125,47 @@ object Form1: TForm1
         Caption = 'btnMsgPackTester'
         TabOrder = 0
         OnClick = btnMsgPackTesterClick
+      end
+    end
+    object tsDValue: TTabSheet
+      Caption = 'tsDValue'
+      ImageIndex = 3
+      object btnDValue: TButton
+        Left = 16
+        Top = 32
+        Width = 75
+        Height = 25
+        Caption = 'btnDValue'
+        TabOrder = 0
+        OnClick = btnDValueClick
+      end
+      object btnBase64: TButton
+        Left = 16
+        Top = 104
+        Width = 75
+        Height = 25
+        Caption = 'btnBase64'
+        TabOrder = 1
+        OnClick = btnBase64Click
+      end
+      object Button1: TButton
+        Left = 168
+        Top = 32
+        Width = 75
+        Height = 25
+        Caption = 'Button1'
+        TabOrder = 2
+        Visible = False
+        OnClick = Button1Click
+      end
+      object btnDValueCloneFrom: TButton
+        Left = 168
+        Top = 104
+        Width = 113
+        Height = 25
+        Caption = 'btnDValueCloneFrom'
+        TabOrder = 3
+        OnClick = btnDValueCloneFromClick
       end
     end
   end
