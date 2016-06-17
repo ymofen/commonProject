@@ -8,5 +8,7 @@
     <Transaction>2016/03/10 14:20:09.611.pas,E:\workspace\commonProject\delphi\DValueTester\DxStringBuilder.pas=</Transaction>
     <Transaction>2016/04/06 13:39:03.171.pas,E:\workspace\commonProject\delphi\DValueTester\Unit1.pas=E:\workspace\diocp-v5\source\utils_dvalue_multiparts.pas</Transaction>
     <Transaction>2016/04/14 09:58:02.217.pas,E:\workspace\commonProject\delphi\DValueTester\Unit1.pas=E:\workspace\diocp-v5\source\utils_dvalue_msgpack.pas</Transaction>
+    <Transaction>2016/05/12 17:30:53.749.pas,E:\workspace\diocp-v5\source\utils_dvalue_msgpack.pas=</Transaction>
+    <Transaction>2016/05/12 17:30:53.751.pas,E:\workspace\diocp-v5\source\utils_dvalue_multiparts.pas=</Transaction>
   </Transactions>
 </BorlandProject>
