@@ -3,7 +3,7 @@ unit PageSQLMaker;
 interface
 
 uses
-  utils.strings, SysUtils, Classes;
+  utils_strings, SysUtils, Classes;
 
 
 
@@ -19,6 +19,10 @@ type
     property TemplateSQL: String read FTemplateSQL write FTemplateSQL;
   end;
 
+  /// <summary>
+  ///  使用模版sql
+  ///  limit 进行分页
+  /// </summary>
   TPageMySQLMaker = class(TPageSQLMaker)
   public
     function GetRecordCounterSQL: string; override;
@@ -28,6 +32,65 @@ type
     ///   pageIndex从0开始
     /// </summary>
     function GetPageSQL(pvPageIndex:Integer): String; override;
+  end;
+
+  /// <summary>
+  ///   只支持2012以上的mssqlserver
+  ///   使用fetch next
+  /// </summary>
+  TPageMSSQLMaker2012 = class(TPageSQLMaker)
+  private
+    FOrderBy: String;
+    FPrimaryKey: String;
+    FSelectFields: String;
+    FSortType: Integer;
+    FTableName: String;
+    FWhereSection: String;
+  public
+    function GetRecordCounterSQL: string; override;
+
+    /// <summary>
+    ///   生成获取第几页的数据的SQL语句
+    ///   pageIndex从1开始
+    /// </summary>
+    function GetPageSQL(pvPageIndex:Integer): String; override;
+  public
+    property OrderBy: String read FOrderBy write FOrderBy;
+    property PrimaryKey: String read FPrimaryKey write FPrimaryKey;
+    property SelectFields: String read FSelectFields write FSelectFields;
+    property SortType: Integer read FSortType write FSortType;
+    property TableName: String read FTableName write FTableName;
+    property WhereSection: String read FWhereSection write FWhereSection;
+  end;
+
+
+  /// <summary>
+  ///   只支持2005以上的mssqlserver
+  ///   使用rownumber进行分页
+  /// </summary>
+  TPageMSSQLMaker2005 = class(TPageSQLMaker)
+  private
+    FOrderBy: String;
+    FPrimaryKey: String;
+    FSelectFields: String;
+    FSortType: Integer;
+    FTableName: String;
+    FWhereSection: String;
+  public
+    function GetRecordCounterSQL: string; override;
+
+    /// <summary>
+    ///   生成获取第几页的数据的SQL语句
+    ///   pageIndex从0开始
+    /// </summary>
+    function GetPageSQL(pvPageIndex:Integer): String; override;
+  public
+    property OrderBy: String read FOrderBy write FOrderBy;
+    property PrimaryKey: String read FPrimaryKey write FPrimaryKey;
+    property SelectFields: String read FSelectFields write FSelectFields;
+    property SortType: Integer read FSortType write FSortType;
+    property TableName: String read FTableName write FTableName;
+    property WhereSection: String read FWhereSection write FWhereSection;
   end;
 
 
@@ -118,6 +181,112 @@ begin
   lvSQL := StringReplaceArea(lvSQL, '[selectlist]', '[/selectlist]', 'COUNT(1) AS RecordCount', True);
   lvSQL := StringReplaceArea(lvSQL, '[countIgnore]', '[/countIgnore]', '', True);
   lvSQL := StringReplace(lvSQL, '[page]', '',  [rfReplaceAll]);
+  Result := lvSQL;
+
+end;
+
+{ TPageMSSQLMaker2012 }
+
+function TPageMSSQLMaker2012.GetPageSQL(pvPageIndex: Integer): String;
+var
+  lvSQL:String;
+begin
+  lvSQL := 'SELECT '+FSelectFields+' FROM '+FTableName;
+  if Length(FWhereSection) <> 0 then
+    lvSQL := lvSQL + ' WHERE '+ FWhereSection;
+    
+  lvSQL := lvSQL + ' Order By ';
+  if (FOrderBy='') then
+    lvSQL := lvSQL + FPrimaryKey
+  Else
+    lvSQL := lvSQL + FOrderBy;
+
+  if (SortType =2) then  lvSQL := lvSQL +' desc ';
+
+  if (pvPageIndex<=1) then
+    lvSQL := lvSQL + ' OFFSET 0 ROW FETCH NEXT '+IntToStr(PageSize)+' ROWS ONLY'
+  Else
+    lvSQL := lvSQL + ' OFFSET '+Inttostr((pvPageIndex - 1) * PageSize + 1)+' ROW FETCH NEXT '+IntToStr(PageSize)+' ROWS ONLY';
+  Result := lvSQL;
+end;
+
+function TPageMSSQLMaker2012.GetRecordCounterSQL: string;
+var
+  lvSQL:String;
+begin
+  lvSQL := 'SELECT COUNT(' + FPrimaryKey + ') FROM '+FTableName;
+  if Length(FWhereSection) <> 0 then
+    lvSQL := lvSQL + ' WHERE '+ FWhereSection;
+  Result := lvSQL;
+
+end;
+
+{ TPageMSSQLMaker2005 }
+
+function TPageMSSQLMaker2005.GetPageSQL(pvPageIndex: Integer): String;
+var
+  lvSQL:String;
+  lvBuilder:TDStringBuilder;
+begin
+  lvBuilder := TDStringBuilder.Create;
+  try
+    lvBuilder.AppendLine(';WITH __table AS (');
+    lvBuilder.Append(' SELECT TOP (').Append(pvPageIndex + 1 * FPageSize).AppendLine(')');
+    lvBuilder.AppendLine(FSelectFields);
+    // 序号(____sn)
+    lvBuilder.Append(' , ROW_NUMBER() OVER(ORDER BY ');
+    if Length(FOrderBy)=0 then
+      lvBuilder.Append(FPrimaryKey)
+    Else
+      lvBuilder.Append(FOrderBy);
+    if (SortType =2) then  lvBuilder.Append(' DESC ');
+    lvBuilder.AppendLine(') AS ____sn');
+
+    lvBuilder.Append('FROM ').AppendLine(FTableName);
+    if Length(FWhereSection) <> 0 then
+      lvBuilder.Append('WHERE ').AppendLine(FWhereSection);
+
+    lvBuilder.Append('ORDER BY ');
+    if Length(FOrderBy)=0 then
+      lvBuilder.Append(FPrimaryKey)
+    Else
+      lvBuilder.Append(FOrderBy);
+    if (SortType =2) then  lvBuilder.AppendLine(' DESC ');
+    lvBuilder.AppendLine(') ');  // end with __table
+    lvBuilder.AppendLine('SELECT ');
+    lvBuilder.AppendLine(FSelectFields);
+    lvBuilder.AppendLine('FROM __table');
+    lvBuilder.Append('WHERE ____sn BETWEEN ').Append(pvPageIndex * FPageSize + 1).Append(' AND ').Append((pvPageIndex + 1) * FPageSize).Append(sLineBreak);
+    lvBuilder.AppendLine('ORDER BY ____sn');
+    Result := lvBuilder.ToString;
+  finally
+    lvBuilder.Free;
+  end;
+//;WITH cte AS (
+//SELECT TOP (@page * @size)
+//CustomerID,
+//CustomerNumber,
+//CustomerName,
+//CustomerCity,
+//ROW_NUMBER() OVER(ORDER BY CustomerName ) AS Seq --,COUNT(*) OVER(PARTITION BY '') AS Total
+//FROM Customers
+//WHERE CustomerCity IN ('A-City','B-City')
+//ORDER BY CustomerName ASC
+//)
+//SELECT CustomerID,CustomerNumber,CustomerName,CustomerCity,@Total
+//FROM cte
+//WHERE seq BETWEEN (@page - 1 ) * @size + 1 AND @page * @size
+//ORDER BY seq;
+
+end;
+
+function TPageMSSQLMaker2005.GetRecordCounterSQL: string;
+var
+  lvSQL:String;
+begin
+  lvSQL := 'SELECT COUNT(' + FPrimaryKey + ') FROM '+FTableName;
+  if Length(FWhereSection) <> 0 then
+    lvSQL := lvSQL + ' WHERE '+ FWhereSection;
   Result := lvSQL;
 
 end;

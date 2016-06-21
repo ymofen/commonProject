@@ -19,11 +19,10 @@ object Form1: TForm1
     Width = 783
     Height = 73
     Align = alTop
-    Caption = 'pnlTop'
     TabOrder = 0
     object btnGetPageSQL: TButton
-      Left = 4
-      Top = 25
+      Left = 131
+      Top = 0
       Width = 101
       Height = 25
       Caption = 'btnGetPageSQL'
@@ -31,8 +30,8 @@ object Form1: TForm1
       OnClick = btnGetPageSQLClick
     end
     object btnRecordCountSQL: TButton
-      Left = 208
-      Top = 16
+      Left = 131
+      Top = 31
       Width = 129
       Height = 25
       Caption = 'btnRecordCountSQL'
@@ -47,13 +46,49 @@ object Form1: TForm1
       TabOrder = 2
       Text = '0'
     end
+    object btnGetNormalPageSQL: TButton
+      Left = 592
+      Top = 15
+      Width = 129
+      Height = 25
+      Caption = 'btnGetNormalPageSQL'
+      TabOrder = 3
+      OnClick = btnGetNormalPageSQLClick
+    end
+    object btnGetPageSQL_Mssql: TButton
+      Left = 266
+      Top = 0
+      Width = 121
+      Height = 25
+      Caption = 'btnGetPageSQL_Mssql'
+      TabOrder = 4
+      OnClick = btnGetPageSQL_MssqlClick
+    end
+    object btnRecordCountMssql: TButton
+      Left = 266
+      Top = 31
+      Width = 121
+      Height = 25
+      Caption = 'btnRecordCountMssql'
+      TabOrder = 5
+      OnClick = btnRecordCountMssqlClick
+    end
+    object btnGetPageSQL_2005: TButton
+      Left = 408
+      Top = 0
+      Width = 113
+      Height = 25
+      Caption = 'btnGetPageSQL_2005'
+      TabOrder = 6
+      OnClick = btnGetPageSQL_2005Click
+    end
   end
   object pgcMain: TPageControl
     Left = 0
     Top = 73
     Width = 783
     Height = 367
-    ActivePage = TabSheet1
+    ActivePage = tsNormalPage
     Align = alClient
     TabOrder = 1
     object TabSheet1: TTabSheet
@@ -88,6 +123,20 @@ object Form1: TForm1
         Align = alClient
         Lines.Strings = (
           'mmoSQL')
+        TabOrder = 0
+      end
+    end
+    object tsNormalPage: TTabSheet
+      Caption = 'tsNormalPage'
+      ImageIndex = 2
+      object mmoNormalSQL: TMemo
+        Left = 0
+        Top = 0
+        Width = 775
+        Height = 339
+        Align = alClient
+        Lines.Strings = (
+          'select * from bas_goods')
         TabOrder = 0
       end
     end
