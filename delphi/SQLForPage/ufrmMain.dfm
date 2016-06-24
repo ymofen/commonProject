@@ -53,7 +53,6 @@ object Form1: TForm1
       Height = 25
       Caption = 'btnGetNormalPageSQL'
       TabOrder = 3
-      OnClick = btnGetNormalPageSQLClick
     end
     object btnGetPageSQL_Mssql: TButton
       Left = 266
