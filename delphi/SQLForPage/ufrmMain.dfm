@@ -46,13 +46,14 @@ object Form1: TForm1
       TabOrder = 2
       Text = '0'
     end
-    object btnGetNormalPageSQL: TButton
-      Left = 592
-      Top = 15
-      Width = 129
+    object btnGetPageSQL2012_Template: TButton
+      Left = 408
+      Top = 31
+      Width = 177
       Height = 25
-      Caption = 'btnGetNormalPageSQL'
+      Caption = 'btnGetPageSQL2012_Template'
       TabOrder = 3
+      OnClick = btnGetPageSQL2012_TemplateClick
     end
     object btnGetPageSQL_Mssql: TButton
       Left = 266
@@ -87,7 +88,7 @@ object Form1: TForm1
     Top = 73
     Width = 783
     Height = 367
-    ActivePage = tsNormalPage
+    ActivePage = tsTemplateSQL
     Align = alClient
     TabOrder = 1
     object TabSheet1: TTabSheet
@@ -125,8 +126,8 @@ object Form1: TForm1
         TabOrder = 0
       end
     end
-    object tsNormalPage: TTabSheet
-      Caption = 'tsNormalPage'
+    object tsTemplateSQL: TTabSheet
+      Caption = 'tsTemplateSQL'
       ImageIndex = 2
       object mmoNormalSQL: TMemo
         Left = 0
