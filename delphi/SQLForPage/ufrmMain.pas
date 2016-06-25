@@ -18,12 +18,14 @@ type
     btnRecordCountSQL: TButton;
     edtPageIndex: TEdit;
     tsTemplateSQL: TTabSheet;
-    mmoNormalSQL: TMemo;
+    mmoTemplateSQL: TMemo;
     btnGetPageSQL2012_Template: TButton;
     btnGetPageSQL_Mssql: TButton;
     btnRecordCountMssql: TButton;
     btnGetPageSQL_2005: TButton;
+    btnGetPageSQL2012_TemplateRecordCount: TButton;
     procedure btnGetPageSQL2012_TemplateClick(Sender: TObject);
+    procedure btnGetPageSQL2012_TemplateRecordCountClick(Sender: TObject);
     procedure btnGetPageSQLClick(Sender: TObject);
     procedure btnGetPageSQL_2005Click(Sender: TObject);
     procedure btnGetPageSQL_MssqlClick(Sender: TObject);
@@ -60,17 +62,22 @@ end;
 
 procedure TForm1.btnGetPageSQL2012_TemplateClick(Sender: TObject);
 var
-  lvPageSQLMaker:TPageMSSQLMaker2012;
+  lvPageSQLMaker:TPageMSSQLMakerTemplate2012;
 begin
-  lvPageSQLMaker := TPageMSSQLMaker2012.Create;
-  lvPageSQLMaker.SelectFields := '*';
-  lvPageSQLMaker.PageSize := 50;
-  lvPageSQLMaker.PrimaryKey := 'FCode';
-  lvPageSQLMaker.TableName := 'bas_Goods';
-  lvPageSQLMaker.SortType := 2;
+  lvPageSQLMaker := TPageMSSQLMakerTemplate2012.Create;
+  lvPageSQLMaker.TemplateSQL := mmoTemplateSQL.Lines.Text;
   mmoSQL.Lines.Add(lvPageSQLMaker.GetPageSQL(StrToInt(edtPageIndex.Text)));
-  lvPageSQLMaker.Free;
+  lvPageSQLMaker.Free;   
+end;
 
+procedure TForm1.btnGetPageSQL2012_TemplateRecordCountClick(Sender: TObject);
+var
+  lvPageSQLMaker:TPageMSSQLMakerTemplate2012;
+begin
+  lvPageSQLMaker := TPageMSSQLMakerTemplate2012.Create;
+  lvPageSQLMaker.TemplateSQL := mmoTemplateSQL.Lines.Text;
+  mmoSQL.Lines.Add(lvPageSQLMaker.GetRecordCounterSQL());
+  lvPageSQLMaker.Free;
 end;
 
 procedure TForm1.btnGetPageSQLClick(Sender: TObject);

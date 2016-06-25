@@ -47,8 +47,8 @@ object Form1: TForm1
       Text = '0'
     end
     object btnGetPageSQL2012_Template: TButton
-      Left = 408
-      Top = 31
+      Left = 555
+      Top = 1
       Width = 177
       Height = 25
       Caption = 'btnGetPageSQL2012_Template'
@@ -81,6 +81,15 @@ object Form1: TForm1
       Caption = 'btnGetPageSQL_2005'
       TabOrder = 6
       OnClick = btnGetPageSQL_2005Click
+    end
+    object btnGetPageSQL2012_TemplateRecordCount: TButton
+      Left = 560
+      Top = 32
+      Width = 193
+      Height = 25
+      Caption = 'btnGetPageSQL2012_TemplateRecordCount'
+      TabOrder = 7
+      OnClick = btnGetPageSQL2012_TemplateRecordCountClick
     end
   end
   object pgcMain: TPageControl
@@ -129,14 +138,15 @@ object Form1: TForm1
     object tsTemplateSQL: TTabSheet
       Caption = 'tsTemplateSQL'
       ImageIndex = 2
-      object mmoNormalSQL: TMemo
+      object mmoTemplateSQL: TMemo
         Left = 0
         Top = 0
         Width = 775
         Height = 339
         Align = alClient
         Lines.Strings = (
-          'select * from bas_goods')
+          'select * from bas_goods'
+          'order by fcode')
         TabOrder = 0
       end
     end

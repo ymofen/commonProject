@@ -310,7 +310,7 @@ var
   ok: boolean;
   DatabaseId, SQLStr, FetchSQL: AnsiString;
   TmpSqlComm, TopSqlComm, TableName, TopFieldName:String;
-  SqlCommand, OlsSQL: string;
+  SqlCommand: string;
   PoolId,ConnectionId,j, StrI, TableSize: integer;
   CurPage, totalRecords, TotalPages:Integer;
   EnableBCD, CompSQLComm: boolean;
@@ -318,96 +318,76 @@ var
   Err:String;
 begin
   SqlCommand:=FTemplateSQL;
-  OlsSQL := SqlCommand;
   CurPage := pvPageIndex;
 
 
-      SqlCommand := AnsiLowerCase(AnsiReplaceStr(SqlCommand,'  ',' '));
-      CompSQLComm := (Pos(' from ',SqlCommand)>0);      //判断是否为完整SQL语句
-      //==================================
+  SqlCommand := AnsiLowerCase(AnsiReplaceStr(SqlCommand,'  ',' '));
+  CompSQLComm := (Pos(' from ',SqlCommand)>0);      //判断是否为完整SQL语句
+  if not CompSQLComm then
+  begin
+    raise Exception.Create('非完整的SQL语句,不能进行分页SQL语句提取!');
+  end;
 
-      //==============
-      if (CurPage<=1) then
-      Begin
-        FetchSQL := ' OFFSET 0 ROW FETCH NEXT '+IntToStr(PageSize)+' ROWS ONLY'
-      End
-      Else
-      Begin
-        FetchSQL := ' OFFSET '+Inttostr((CurPage -1 ) * PageSize + 1)+' ROW FETCH NEXT '+IntToStr(PageSize)+' ROWS ONLY'
-      End;
+  //==============
+  if (CurPage<=1) then
+  Begin
+    FetchSQL := ' OFFSET 0 ROW FETCH NEXT '+IntToStr(PageSize)+' ROWS ONLY'
+  End
+  Else
+  Begin
+    FetchSQL := ' OFFSET '+Inttostr((CurPage -1 ) * PageSize + 1)+' ROW FETCH NEXT '+IntToStr(PageSize)+' ROWS ONLY'
+  End;  
 
-      if CompSQLComm then
-      Begin
-        if (Pos('order by', SqlCommand)>0) And (AnsiPos(' top ', SqlCommand)<1) then       //判断是否有排序语法 及 Top 语法
-        Begin
-          sqlStr := SqlCommand + FetchSQL;
-        End
-        Else
-        Begin
-          strI := AnsiPos(' from ', SqlCommand) + 1;
-          TmpSqlComm := Trim(Copy(SqlCommand, strI + 4, StrLen(PChar(SqlCommand))));
-          strI := Pos(' ',TmpSqlComm);
-          if (strI=0) then
-            TableName := Copy(TmpSqlComm,1,StrLen(PChar(SqlCommand)))
-          Else
-            TableName := Copy(TmpSqlComm,1,strI);
+  if (Pos('order by', SqlCommand)>0) And (AnsiPos(' top ', SqlCommand)<1) then
+  Begin          //判断是否有排序语法 及 Top 语法
+    sqlStr := SqlCommand + FetchSQL;
+  End Else
+  Begin    // 如果没有OrderBy 可以找出第一个字段
+    raise Exception.Create('分页语句中必须要有排序设定');
+  End;
 
-          if (AnsiPos(' top ',SqlCommand)>0) then
-            SQLStr := SqlCommand
-          Else
-          Begin
-            TmpSqlComm := Copy(SqlCommand, 8, StrLen(PChar(SqlCommand)));
-            SqlStr := 'select Top 0 '+ TmpSqlComm;
-          End;
-          if sysQuery.Active then sysQuery.Close;
-          sysQuery.SQL.Text := sqlStr;
-          sysQuery.Open;
-          TopFieldName := SysQuery.Fields.Fields[0].FieldName;
-          if (AnsiPos(' top ',SqlCommand)=0) then
-            sqlStr := SqlCommand +' Order By '+TopFieldName + FetchSQL;
-        End;
-      end;
-
-      if CompSQLComm then       //完整SQL语句，就进行总记录数及页数的统计
-      Begin
-        if (AnsiPos('group by',SqlCommand)>0) then             //判断是否为分组查询语句
-        Begin
-          StrI := AnsiPos('order by', SqlCommand);
-          if (StrI>0) then
-            SqlCommand := 'select Count(*) as RecordCount From ('+Copy(SqlCommand,0,StrI -1)+') as a'
-          Else
-            SqlCommand := 'select Count(*) as RecordCount From ('+SqlCommand+') as a';
-        end
-        else
-        Begin                                                 //非分组查询语句
-          strI := AnsiPos(' from', SqlCommand) + 1;
-          TmpSqlComm := Trim(Copy(SqlCommand, strI, StrLen(PWideChar(SqlCommand))));
-          if (AnsiPos('order by', SqlCommand)>0) then
-          begin
-            strI := AnsiPos('order by', TmpSqlComm);
-            TmpSqlComm := Copy(TmpSqlComm,0,StrI - 1);
-          End;
-          SqlCommand := 'select count(*) AS RecordCount '+ TmpSqlComm;
-        End;
-        if sysQuery.Active then sysQuery.Close;
-        sysQuery.SQL.Text := SqlCommand;
-        SysQuery.Open;
-        if (SysQuery.FieldByName('RecordCount').AsInteger>0) then
-        Begin
-          totalRecords := SysQuery.FieldByName('RecordCount').AsInteger;
-          totalPages := ceil(totalRecords / PageSize);
-        End;
-        if sysQuery.Active then sysQuery.Close;
-        sysQuery.SQL.Text := SqlStr;
-      End
-      Else
-        SysQuery.SQL.Text := SqlCommand;
-
-  
+  Result := SqlStr;
 end;
 
 function TPageMSSQLMakerTemplate2012.GetRecordCounterSQL: string;
+var
+  TmpSqlComm, TopSqlComm, TableName, TopFieldName:String;
+  SqlCommand, OlsSQL: string;
+  StrI: integer;
+  CompSQLComm: boolean;
 begin
+  SqlCommand:=FTemplateSQL;
+
+  SqlCommand := AnsiLowerCase(AnsiReplaceStr(SqlCommand,'  ',' '));
+  CompSQLComm := (Pos(' from ',SqlCommand)>0);      //判断是否为完整SQL语句
+
+  if not CompSQLComm then
+  begin
+    raise Exception.Create('非完整的SQL语句,不能进行统计记录数SQL语句!');
+  end;
+
+  if (AnsiPos('group by',SqlCommand)>0) then             //判断是否为分组查询语句
+  Begin
+    StrI := AnsiPos('order by', SqlCommand);
+    if (StrI>0) then
+      SqlCommand := 'select Count(*) as RecordCount From ('+Copy(SqlCommand,0,StrI -1)+') as a'
+    Else
+      SqlCommand := 'select Count(*) as RecordCount From ('+SqlCommand+') as a';
+  end
+  else
+  Begin                                                 //非分组查询语句
+    strI := AnsiPos(' from', SqlCommand) + 1;
+    TmpSqlComm := Trim(Copy(SqlCommand, strI, StrLen(PChar(SqlCommand))));
+    if (AnsiPos('order by', SqlCommand)>0) then
+    begin
+      strI := AnsiPos('order by', TmpSqlComm);
+      TmpSqlComm := Copy(TmpSqlComm,0,StrI - 1);
+    End;
+    SqlCommand := 'select count(*) AS RecordCount '+ TmpSqlComm;
+  End;
+  // sqlCommand 为统计RecordCount
+  Result := SqlCommand;
+
 
 end;
 
